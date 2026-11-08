@@ -1,0 +1,8 @@
+{
+  "name": "eiu-private-drive-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "cf build" },
+  "devDependencies": { "cf": "1.0.0-beta.28" }
+}

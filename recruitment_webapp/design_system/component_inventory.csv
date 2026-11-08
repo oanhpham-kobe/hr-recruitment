@@ -1,0 +1,36 @@
+﻿component,category,priority,notes
+AppShell,Layout,Must,Dark EIU sidebar + sticky header + top-right language switcher
+Sidebar,Navigation,Must,244px desktop; dark MedLabs-inspired navigation
+LanguageSwitcher,Navigation,Must,VI | EN; default VI
+PageHeader,Layout,Must,Sticky; utility area top-right
+StickyActionToolbar,Action,Must,One Status dropdown; contextual bulk actions
+DataTable,Data,Must,HTML table + colgroup; 16px; left-align; wrap
+ExpandableDataRow,Data,Must,Whole-row click; aligned child grid
+DetailDrawer,Overlay,Must,Label | Value; 16px minimum
+Modal,Overlay,Must,16px minimum focused action
+ConfirmationDialog,Overlay,Must,Destructive/warning
+Button,Action,Must,16px; Primary/Secondary/Ghost/Danger
+IconButton,Action,Must,40px target + accessible label
+StatusBadge,Feedback,Must,16px semibold; fixed group width; centered; optionally clickable
+StatusDropdown,Input,Must,Single toolbar control + shared menu
+SearchField,Input,Must,16px type search
+SearchableCombobox,Input,Must,Single searchable
+DependentCombobox,Input,Must,Khoa/Phòng → Ngành/Tổ → Vị trí
+MultiSelectCombobox,Input,Must,Participants/Candidates
+FilterBar,Data,Must,Search + filters
+FormSection,Form,Must,16px labels/values
+FileList,Files,Must,Preview/download/replace
+FilePreview,Files,Should,16px preview UI
+EmailPreview,Email,Must,16px recipients/body/send
+InlineError,Feedback,Must,Accessible errors
+WarningBanner,Feedback,Must,Conflict/status warning
+Toast,Feedback,Should,Post-action feedback
+EmptyState,Feedback,Must,Clear next action
+UserCard,Navigation,Should,Sidebar user area
+TableScrollContainer,Data,Must,Horizontal overflow wrapper; toolbar/header stay outside
+DemoPersonaSwitcher,Prototype,Should,Prototype/dev only; never production authorization
+
+SubmissionSelector,Form,Must,Returns submission_id; show candidate name/email/date/status
+PrivacyNoticeAcknowledgement,Form,Must,Required Candidate NEW/EDIT pinned notice version + acknowledgement
+AuthBindingBadge,Security,Must,Bound/Unbound display; privileged identity action separate
+MasterUsageGuard,Data,Must,Reference usage + structural edit guard guidance

@@ -1,0 +1,90 @@
+﻿case_id,category,scenario,expected_result,gate_result
+AUTH-01,Candidate,Candidate login bằng verified email mới,Candidate record được tạo/map; email read-only,PASS_SPEC
+AUTH-02,Candidate,Candidate inactive login,Portal bị chặn; dữ liệu không xóa,PASS_SPEC
+AUTH-03,Candidate,Candidate cố sửa email trong form,Bị chặn frontend + backend,PASS_SPEC
+AUTH-04,Internal User,Email không @eiu.edu.vn,Không hợp lệ cho internal login,PASS_SPEC
+AUTH-05,Internal User,User inactive đăng nhập,Bị chặn,PASS_SPEC
+AUTH-06,Root Admin,Tạo root admin thứ 2,DB/app block,TECH_GUARD
+AUTH-07,Root Admin,Inactive/Delete root admin,Block,PASS_SPEC
+PERM-01,HR,HR không có submissions.edit bấm edit,Block backend,PASS_SPEC
+PERM-02,HR,HR có reports.edit_interviewer sửa report,Cho phép; log updated_by HR,PASS_SPEC
+PERM-03,HR,HR tự cấp permission cho mình,Block; Root-only,PASS_SPEC
+PERM-04,Interviewer,Không phải participant truy cập URL trực tiếp,RLS deny,PASS_SPEC
+PERM-05,Interviewer,Record bị HR ẩn,Không query/read được,PASS_SPEC
+PERM-06,Interviewer,Participant bị remove,Không còn thấy record,PASS_SPEC
+PERM-07,HR+Interviewer,Một HR đồng thời là participant,Có HR actions theo permission + report cá nhân theo participant,PASS_SPEC
+SUB-01,Submission,Candidate tạo phiếu đầu tiên,NEW,PASS_SPEC
+SUB-02,Submission,HR mở NEW,READ,PASS_SPEC
+SUB-03,Submission,Candidate edit khi READ,Block,PASS_SPEC
+SUB-04,Submission,HR Mark New khi không active Application,NEW,PASS_SPEC
+SUB-05,Submission,HR Mark New khi còn active Application,Block,PASS_SPEC
+SUB-06,Submission,Bulk Mark New mixed eligible,Block toàn batch; chỉ ra lỗi,PASS_SPEC
+SUB-07,Submission,Nhiều phiếu cùng email,Group một Candidate; child rows theo Ngày ứng tuyển,PASS_SPEC
+SUB-08,Candidate,HR Inactive Candidate có nhiều Submission,Candidate portal block toàn account; history HR giữ,PASS_SPEC
+SUB-09,Candidate,Reactivate Candidate,Portal mở lại; status từng phiếu tính theo dữ liệu,PASS_SPEC
+APP-01,Application,Tạo Application mới,Tạo app identity + Vòng1 Available,PASS_SPEC
+APP-02,Application,Tạo đúng duplicate combo,Warning+confirm; update existing ID,PASS_SPEC
+APP-03,Application,Hai HR tạo duplicate cùng lúc,DB uniqueness chặn duplicate vật lý,TECH_GUARD
+APP-04,Application,Khác 1 trong Unit/Dept/Position,Tạo Application khác,PASS_SPEC
+APP-05,Application,Đổi identity sau khi đã có Interview Session,Block; phải tạo Application mới,PASS_SPEC
+APP-06,Application,Bulk assign nhiều Candidate,Gán identity/HR owner; Demo Topic blank,PASS_SPEC
+APP-07,Application,Inactive app cuối cùng,Submission recalc READ nếu không app active khác,PASS_SPEC
+ROUND-01,Interview Round,Tạo Application single,"Auto Vòng1, round_no=1",PASS_SPEC
+ROUND-02,Interview Round,Tạo Vòng2,"Cùng app identity, Demo Topic blank, round_no=2",PASS_SPEC
+ROUND-03,Interview Round,Tạo Vòng3 khi Vòng2 inactive,Block,PASS_SPEC
+ROUND-04,Interview Round,Inactive Vòng2 khi Vòng3 tồn tại,Block,PASS_SPEC
+ROUND-05,Interview Round,Inactive Vòng3 latest có history,Set is_active=false,PASS_SPEC
+ROUND-06,Interview Round,Hard delete Vòng3 latest chưa có usage,Delete; round3 có thể reuse,PASS_SPEC
+ROUND-07,Interview Round,Tạo round cùng lúc từ 2 HR,Transaction+unique round_no,TECH_GUARD
+ROUND-08,Interview Round,Current round latest active,Page Report/PDF dùng đúng round,PASS_SPEC
+ROUND-09,Interview Round,Latest round inactive,Current fallback previous active; không tạo round mới,PASS_SPEC
+SCH-01,Schedule,Save lịch AVAILABLE,"Lưu data, status không auto đổi",PASS_SPEC
+SCH-02,Schedule,Edit CONFIRMED,Block,PASS_SPEC
+SCH-03,Schedule,Đổi CONFIRMED về SCHEDULED rồi edit,Cho phép,PASS_SPEC
+SCH-04,Schedule,Interviewer overlap,Block save,PASS_SPEC
+SCH-05,Schedule,Room overlap,Block save,PASS_SPEC
+SCH-06,Schedule,Overlap với CANCELLED,Không block,PASS_SPEC
+SCH-07,Schedule,Overlap với inactive session,Không block,PASS_SPEC
+SCH-08,Schedule,2 HR tạo lịch cùng slot đồng thời,Server re-check transaction,TECH_GUARD
+COPY-01,Copy,Copy cùng Application,Tạo next round; Demo Topic blank,PASS_SPEC
+COPY-02,Copy,Copy sang Application khác,Tạo next round target app; không tự tạo Application,PASS_SPEC
+COPY-03,Copy,Copy gây participant conflict,Block save,PASS_SPEC
+REP-01,Report,Interviewer chưa có report,Báo cáo PV action,PASS_SPEC
+REP-02,Report,Interviewer đã có report,Edit action,PASS_SPEC
+REP-03,Report,Một field evaluation trống,PDF vẫn render dòng trống,PASS_SPEC
+REP-04,Report,"Participant order 1,2,3",PDF theo đúng thứ tự,PASS_SPEC
+REP-05,Report,Remove participant có report,Block participant biến khỏi current PDF; report history giữ,PASS_SPEC
+REP-06,Report,Re-add participant,Popup Restore/Create new,PASS_SPEC
+REP-07,Report,2 interviewer có decision block,Latest eligible decision_updated_at là Final Decision Source; qualitative edit không đổi nguồn,PASS_SPEC
+REP-08,Report,Latest source xóa sạch decision block,Fallback eligible trước,PASS_SPEC
+REP-09,Report,Tạo Vòng2 sau report Vòng1,Vòng2 current; PDF/report page dùng Vòng2; Vòng1 history,PASS_SPEC
+REP-10,Report,Current round HIRED,Application outcome HIRED; Submission DONE,PASS_SPEC
+REP-11,Report,Current round REJECTED và app duy nhất,Application REJECTED; Submission CLOSED,PASS_SPEC
+REP-12,Report,"App1 rejected, App2 in progress",Submission PROCESSED,PASS_SPEC
+REP-13,Report,"App1 rejected, App2 hired",Submission DONE,PASS_SPEC
+REP-14,Report,HR status Hired/Rejected; interviewer edit,Block interviewer,PASS_SPEC
+REP-15,Report,HR đổi final về non-final,Interviewer edit lại được nếu visible/current,PASS_SPEC
+REP-16,Report,HR có permission sửa report interviewer,Cho phép,PASS_SPEC
+REP-17,Report,HR không permission sửa report interviewer,Block,PASS_SPEC
+REP-18,Report,HR stale save sau interviewer update,Block HR + reload,PASS_SPEC
+REP-19,Report,Interviewer stale save sau HR update,"Field-aware merge; khác field giữ cả hai, cùng field Interviewer wins; HR stale phải reload",PASS_SPEC
+REP-20,Report,Cùng interviewer 2 tab stale,Block stale tab,PASS_SPEC
+VIS-01,Visibility,HR Ẩn current report row,Interviewer không thấy; HR/PDF giữ,PASS_SPEC
+VIS-02,Visibility,HR Hiện lại,Interviewer thấy lại dữ liệu,PASS_SPEC
+MAIL-01,Email,Gửi thư ứng viên,Preview; send thủ công; status không auto,PASS_SPEC
+MAIL-02,Email,Gửi thư interviewer,Preview recipients; send thủ công,PASS_SPEC
+MAIL-03,Email,Xóa email history gửi lỗi,Hard delete email log; parent không bị kẹt bởi log đã xóa,PASS_SPEC
+DEL-01,Delete,Room chưa dùng,Hard delete,PASS_SPEC
+DEL-02,Delete,Room đã dùng,Inactive,PASS_SPEC
+DEL-03,Delete,User chưa tham chiếu,Hard delete,PASS_SPEC
+DEL-04,Delete,User đã là participant,Inactive; history snapshot giữ,PASS_SPEC
+DEL-05,Delete,Activity log duy nhất,Không tính blocker hard-delete,PASS_SPEC
+DEL-06,Delete,Application có Interview Session,Không hard-delete; inactive,PASS_SPEC
+DEL-07,Delete,Interview latest có report/email/doc,Inactive,PASS_SPEC
+STATUS-01,Status,Report Hired trong khi schedule Available,Warning nhưng HR được confirm,PASS_SPEC
+STATUS-02,Status,Đổi status không theo order,Cho phép HR có permission,PASS_SPEC
+PDF-01,PDF,"Current round 3, prior round1/2 có data",PDF chỉ round3,PASS_SPEC
+PDF-02,PDF,Participant chưa nhập nội dung,Tên/chức vụ vẫn render; nội dung trống theo template,PASS_SPEC
+PDF-03,PDF,User đổi job title sau interview,PDF/history dùng snapshot cũ,PASS_SPEC
+USER-01,User Directory,Sửa internal email,Sync auth; không duplicate; snapshot cũ giữ,TECH_GUARD
+USER-02,User Directory,HR directory permission nhưng không permissions.manage,"Sửa directory được, không cấp quyền được",PASS_SPEC

@@ -1,0 +1,15 @@
+# Project-local oh-my-pi settings.
+# OMP merges this over the user's global config for sessions started at repo root.
+
+todo:
+  enabled: true
+  eager: always
+  reminders: true
+
+skills:
+  enabled: true
+  enableAgentsProject: true
+  enableSkillCommands: true
+
+task:
+  batch: true

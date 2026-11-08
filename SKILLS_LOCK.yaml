@@ -1,0 +1,89 @@
+# EIU Recruitment — Skill Source / Integrity Registry
+registry_version: "3.0"
+updated_at: "2026-11-08"
+
+# IMPORTANT:
+# OMP does not read this file to discover or load skills.
+# Runtime authority is OMP native provider discovery + skill:// + autoloadSkills.
+# This registry exists only to document project-local provenance and pinned tool versions.
+runtime_authority: OMP_NATIVE_DISCOVERY
+runtime_skill_home: .agents/skills
+runtime_path_resolution: FORBIDDEN_FROM_THIS_FILE
+machine_specific_paths_allowed: false
+
+tool_dependencies:
+  - name: gitnexus
+    source: https://github.com/abhigyanpatwari/GitNexus
+    package: gitnexus@1.6.10
+    role: ON_DEMAND_CODE_GRAPH
+    mcp_name: gitnexus-recruitment
+    runtime_policy: ON_DEMAND
+    source_confirmation_required: true
+
+project_skills:
+  - name: supabase
+    source: https://github.com/supabase/agent-skills
+    installed_path: .agents/skills/supabase/SKILL.md
+  - name: supabase-postgres-best-practices
+    source: https://github.com/supabase/agent-skills
+    installed_path: .agents/skills/supabase-postgres-best-practices/SKILL.md
+  - name: ponytail-review
+    source: https://github.com/DietrichGebert/ponytail
+    installed_path: .agents/skills/ponytail-review/SKILL.md
+  - name: verification-before-completion
+    source: https://github.com/obra/superpowers
+    source_ref: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
+    source_path: skills/verification-before-completion/SKILL.md
+    installed_path: .agents/skills/verification-before-completion/SKILL.md
+
+release_skills:
+  - name: deploy-to-vercel
+    source: https://github.com/vercel-labs/agent-skills
+    installed_path: .agents/skills/deploy-to-vercel/SKILL.md
+    authorization: EXPLICIT_RELEASE_ONLY
+  - name: vercel-optimize
+    source: https://github.com/vercel-labs/agent-skills
+    installed_path: .agents/skills/vercel-optimize/SKILL.md
+    authorization: POST_DEPLOY_ANALYSIS_ONLY
+
+gitnexus_skills:
+  source: npm:gitnexus@1.6.10
+  runtime_policy: ON_DEMAND
+  items:
+    - name: gitnexus-exploring
+      installed_path: .agents/skills/gitnexus-exploring/SKILL.md
+    - name: gitnexus-impact-analysis
+      installed_path: .agents/skills/gitnexus-impact-analysis/SKILL.md
+    - name: gitnexus-debugging
+      installed_path: .agents/skills/gitnexus-debugging/SKILL.md
+    - name: gitnexus-refactoring
+      installed_path: .agents/skills/gitnexus-refactoring/SKILL.md
+    - name: gitnexus-guide
+      installed_path: .agents/skills/gitnexus-guide/SKILL.md
+    - name: gitnexus-cli
+      installed_path: .agents/skills/gitnexus-cli/SKILL.md
+
+not_project_dependencies:
+  - name: implement
+    reason: OMP_NATIVE_TASK_AGENT_OWNS_IMPLEMENTATION_WORKFLOW
+  - name: code-review
+    reason: OMP_NATIVE_REVIEWER_AND_EIU_REVIEWER_OWN_REVIEW_WORKFLOW
+  - name: context-budget
+    reason: OMP_NATIVE_CONTEXT_AND_COMPACTION
+  - name: frontend-checklist-global
+    reason: PROJECT_DESIGN_SOURCE_AND_REVIEW_CHECKLIST
+  - name: karpathy-guidelines
+    reason: GENERIC_HEURISTIC_NOT_REQUIRED_CAPABILITY
+  - name: vercel-react-best-practices
+    reason: OPTIONAL_USER_PROVIDER_ONLY_UNTIL_COMPLETE_PROJECT_VENDORING
+  - name: vercel-composition-patterns
+    reason: OPTIONAL_USER_PROVIDER_ONLY_UNTIL_COMPLETE_PROJECT_VENDORING
+
+validation_contract:
+  - every project_skills installed_path must exist
+  - every release_skills installed_path must exist
+  - every gitnexus_skills item installed_path must exist
+  - every .omp/agents autoloadSkills name must resolve to a project-local SKILL.md
+  - discovered project skill names must be unique
+  - no C:/Users, C:\\Users, /Users/<name>, or /home/<name> runtime skill path may be required
+  - this registry must never be used by executors as a runtime loader

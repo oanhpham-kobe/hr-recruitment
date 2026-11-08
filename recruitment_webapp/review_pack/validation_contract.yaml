@@ -1,0 +1,174 @@
+version: '1.18'
+updated_at: '2026-09-06'
+text_policy:
+  default: PLAIN_TEXT
+  raw_html_input: FORBIDDEN
+  output_escaping: REQUIRED
+fields:
+  full_name:
+    required: true
+    min_length: 1
+    max_length: 200
+    trim: true
+  email:
+    source: VERIFIED_AUTH
+    max_length: 320
+    editable_candidate: false
+  phone:
+    required: true
+    max_length: 32
+    normalize: DIGITS_PLUS_OPTIONAL_LEADING_PLUS
+  current_address:
+    required: true
+    max_length: 500
+  date_of_birth:
+    required: true
+    min_date: '1900-01-01'
+    max_date: TODAY
+  gender:
+    required: true
+    allowed_values:
+      - MALE
+      - FEMALE
+  major:
+    max_length: 255
+  institution:
+    max_length: 255
+  period_text:
+    max_length: 100
+  demo_topic:
+    max_length: 500
+    content: PLAIN_TEXT
+  meeting_link:
+    max_length: 2048
+    scheme: HTTPS_PRODUCTION
+  hr_note:
+    max_length: 4000
+    content: PLAIN_TEXT
+  interview_note:
+    max_length: 4000
+    content: PLAIN_TEXT
+  hr_report_note:
+    max_length: 4000
+    content: PLAIN_TEXT
+  report_qualitative:
+    max_length: 8000
+    content: PLAIN_TEXT
+  conclusion:
+    max_length: 8000
+    content: PLAIN_TEXT
+  expected_specific_job_assigned:
+    max_length: 8000
+    content: PLAIN_TEXT
+  expected_recruitment_time:
+    max_length: 1000
+    content: PLAIN_TEXT
+  filename:
+    max_length: 255
+    normalize: SAFE_BASENAME
+collections:
+  education_rows:
+    max_items: 20
+    min_items: 0
+    required_fields: []
+  work_experience_rows:
+    max_items: 30
+  activity_rows:
+    max_items: 30
+  current_files_per_submission:
+    max_items: 5
+  current_files_per_interview:
+    max_items: 5
+files:
+  max_file_size_bytes: 5242880
+  allowed_extensions:
+  - pdf
+  - doc
+  - docx
+  - ppt
+  - pptx
+  - png
+  - jpg
+  - jpeg
+  allowed_mime_types:
+  - application/pdf
+  - application/msword
+  - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+  - application/vnd.ms-powerpoint
+  - application/vnd.openxmlformats-officedocument.presentationml.presentation
+  - image/png
+  - image/jpeg
+  validate_magic_bytes: true
+  malware_scan_before_finalize: true
+  strip_image_exif_where_practical: true
+time:
+  interval_semantics: '[start_at,end_at)'
+  start_before_end: true
+  business_timezone: Asia/Ho_Chi_Minh
+  database_type: timestamptz
+search:
+  pii_terms_in_url: false
+  pii_fields:
+  - full_name
+  - email
+  - phone
+candidate_form_document_plan:
+  form_session_must_be: OPEN
+  new_submission_allowed_actions:
+  - ADD
+  edit_submission_allowed_actions:
+  - ADD
+  - REPLACE
+  - DELETE
+  add_replace_upload_status_required: VALIDATED
+  add_replace_malware_status_required: CLEAN
+  max_effective_current_files: 5
+  current_cv_required: true
+  unique_pending_change_per_target_logical: true
+  unique_staged_use_per_upload_reservation: true
+  form_session_unexpired_required: true
+  add_replace_upload_unexpired_required: true
+  form_session_expired_error: FORM_SESSION_EXPIRED
+  upload_reservation_expired_error: UPLOAD_RESERVATION_EXPIRED
+privacy_notice:
+  source: SERVER_PUBLISHED
+  form_session_pinned: true
+  arbitrary_client_version: REJECT
+  submit_update_requires_current_effective_version: true
+  changed_notice_error: PRIVACY_NOTICE_CHANGED
+submission_aggregate:
+  document_only_save_bumps_version: true
+rules:
+- id: V19-MANUAL-STATUS
+  rule: manual NEW/READ requires no active Application
+- id: V19-REACT-PRED
+  rule: Application Reactivate uses reactivation_conflict_relevant; direct scheduling uses resource_blocking
+- id: V19-BULK
+  rule: every visible bulk mutation has named batch command + atomicity
+- id: V19-MASTER-ACTIVE
+  rule: insert/changed selectable master FK requires active
+- id: V19-PARTICIPANT
+  rule: readd/current participant requires active user; future participation blocks deactivation
+- id: V19-FORM-OWNER
+  rule: EDIT form session target Submission belongs to Candidate
+- id: V19-PRIV-DELETE
+  rule: published Privacy Notice DELETE forbidden
+- id: V19-CAND-EMAIL
+  rule: Candidate verified email immutable
+current_baseline:
+  full_handover: '1.18'
+  technical_architecture: '1.18'
+  design_system: '1.8'
+  responsive_prototype: '1.10'
+candidate_form_session_lifecycle:
+  transitions:
+  - OPEN->SUBMITTED
+  - OPEN->CANCELLED
+  - OPEN->EXPIRED
+  terminal_states:
+  - SUBMITTED
+  - CANCELLED
+  - EXPIRED
+  terminal_reopen_allowed: false
+  business_validity_requires: status_code == OPEN AND expires_at > transaction_now
+  cleanup_role: HOUSEKEEPING_ONLY

@@ -1,0 +1,211 @@
+/* Demo-only workspace controls: one instance in the shared header. */
+.preview-workspace-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--eiu-cream);
+  color: var(--eiu-blue);
+  font: inherit;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.preview-controls {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  font-size: 16px;
+}
+.preview-controls label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+.preview-controls select,
+.preview-controls button,
+.preview-controls a {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--ink-600);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--eiu-blue);
+  font: inherit;
+  font-size: 16px;
+  max-width: 100%;
+}
+.preview-controls a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-controls button {
+  cursor: pointer;
+}
+.preview-trial-label {
+  color: var(--eiu-blue);
+  font-weight: 600;
+}
+.preview-simulation-note {
+  font-size: 16px;
+  color: var(--ink-600);
+  line-height: 1.5;
+}
+.preview-stack {
+  display: grid;
+  gap: 16px;
+  max-width: 1100px;
+}
+.preview-stack button {
+  font: inherit;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--eiu-blue);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-950);
+}
+.preview-stack button:disabled {
+  opacity: 0.55;
+}
+.preview-stack p,
+.preview-stack li,
+.preview-stack summary,
+.preview-stack textarea {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.preview-stack textarea {
+  width: 100%;
+  padding: 12px;
+}
+.preview-stack li {
+  padding: 8px;
+}
+.preview-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.preview-stack pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.preview-stack details {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 12px;
+}
+.preview-stack summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+.preview-stack h1 {
+  font-size: 28px;
+}
+.preview-stack h2 {
+  font-size: 22px;
+}
+.preview-stack h3 {
+  font-size: 18px;
+}
+.preview-controls select {
+  min-height: 44px;
+}
+.preview-stack,
+.preview-controls {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.preview-stack h1,
+.preview-stack h2,
+.preview-stack h3,
+.preview-stack p {
+  margin: 0;
+}
+.preview-guide {
+  max-width: 1120px;
+}
+.preview-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
+  margin: 8px 0;
+  list-style: none;
+}
+.preview-steps li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: start;
+  column-gap: 8px;
+  row-gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-control);
+  padding: 16px;
+}
+.preview-steps li > button {
+  grid-column: 2;
+  justify-self: start;
+}
+.preview-steps li > span {
+  color: var(--eiu-blue);
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .topbar-title:has(.workspace-context) {
+    display: none;
+  }
+  .topbar-utility {
+    flex: 1;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .preview-workspace-trigger {
+    padding-inline: 8px;
+  }
+  .preview-workspace-trigger .navigation-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .preview-steps {
+    grid-template-columns: 1fr;
+  }
+}
+@media print {
+  .preview-workspace-trigger {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .preview-workspace-trigger .navigation-icon {
+    display: none;
+  }
+}
+
+.preview-form-page {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.preview-form-page > h1 {
+  color: var(--eiu-blue);
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 0 0 24px;
+}
+.ui-dialog:has(.preview-controls) {
+  width: min(520px, calc(100vw - 24px));
+}

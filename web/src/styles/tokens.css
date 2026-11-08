@@ -1,0 +1,130 @@
+/**
+ * EIU Recruitment Design System v1.8 - Design Tokens
+ * Canonical source: recruitment_webapp/design_system/TOKENS.md
+ */
+
+:root {
+  /* 1. Brand Colors */
+  --eiu-blue: #144069;
+  --eiu-gold: #a78656;
+  --eiu-cream: #f6f1e8;
+  --canvas: #f8f6f1;
+  --surface: #ffffff;
+  --ink-950: #303033;
+  --ink-600: #68686b;
+  --line: #e2d9cc;
+
+  /* 2. Sidebar Tokens */
+  --sidebar-width: 244px;
+  --sidebar-bg-top: #0e416f;
+  --sidebar-bg-bottom: #082f52;
+  --sidebar-text: #f7fafc;
+  --sidebar-muted: #d9e4ee;
+  --sidebar-heading: #e6c88f;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #144069;
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+
+  /* 3. Semantic Status Colors (WCAG 2.2 AA >= 4.5:1 contrast against soft background) */
+  --status-success-text: #3b6a2a;
+  --status-success-bg: #eaf3e6;
+  --status-warning-text: #8a4f00;
+  --status-warning-bg: #fff0de;
+  --status-danger-text: #b44425;
+  --status-danger-bg: #f8e5e0;
+  --status-info-text: #144069;
+  --status-info-bg: #e5edf5;
+  --status-neutral-text: #68686b;
+  --status-neutral-bg: #eef0f1;
+  --status-followup-text: #4b479d;
+  --status-followup-bg: #ecebfa;
+
+  /* Semantic Color Aliases */
+  --color-success: #3b6a2a;
+  --color-success-bg: #eaf3e6;
+  --color-warning: #8a4f00;
+  --color-warning-bg: #fff0de;
+  --color-danger: #b44425;
+  --color-danger-bg: #f8e5e0;
+  --color-info: #144069;
+  --color-info-bg: #e5edf5;
+  --color-neutral: #68686b;
+  --color-neutral-bg: #eef0f1;
+  --color-followup: #4b479d;
+  --color-followup-bg: #ecebfa;
+
+  /* 4. CR-UNICOUNCIL-UI-ADAPTATION-20261105: body/form 16px; scoped workflow UI 14px/21px. */
+  --font-sans: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-size-base: 16px;
+  --font-size-body: 16px;
+  --font-size-table-header: 16px;
+  --font-size-table-cell: 16px;
+  --font-size-label: 16px;
+  --font-size-button: 16px;
+  --font-size-badge: 16px;
+  --font-size-meta: 14px;
+  --font-size-page-title: 28px;
+  --font-size-drawer-title: 22px;
+  --font-size-section-title: 18px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+
+  /* 5. Badge Sizing */
+  --badge-width-submission: 112px;
+  --badge-width-interview: 112px;
+  /* Current Interview / HR Report operational page benchmark.
+     Scoped page consumers use this instead of reinterpreting the initial generic token. */
+  --badge-width-interview-operational: 144px;
+  --badge-width-candidate: 128px;
+  --badge-width-report: 168px;
+  --badge-min-height: 32px;
+
+  /* 6. Spacing Scale (4, 8, 12, 16, 20, 24, 32, 40, 48, 64) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Workspace gutter is applied once, after the sidebar. */
+  --page-gutter: 24px;
+
+  /* 7. Radius */
+  --radius-control: 10px;
+  --radius-card: 15px;
+  --radius-overlay: 16px;
+  --radius-badge: 8px;
+
+  /* 8. Control Heights & Dimensions */
+  --height-control: 44px;
+  --height-compact: 40px;
+  --height-cta: 52px;
+  --header-height: 64px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --page-gutter: 20px;
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --page-gutter: 16px;
+  }
+}
+@media (max-width: 360px) {
+  :root {
+    --page-gutter: 12px;
+  }
+}

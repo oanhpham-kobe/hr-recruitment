@@ -1,0 +1,43 @@
+# Environment / credentials
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Node / Next
+node_modules/
+.next/
+dist/
+build/
+coverage/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Code Review Graph runtime
+.code-review-graph/
+
+# GitNexus generated index
+.gitnexus/
+
+# Local Orca / Git linked worktrees
+# Worktrees are disposable local execution surfaces.
+.worktrees/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# Claude Code skill link to .agents/skills (created by scripts/link-skills.ps1)
+.claude/skills
+
+# Local preview output
+web/.preview/

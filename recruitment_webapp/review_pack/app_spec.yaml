@@ -1,0 +1,366 @@
+product:
+  name: App Tuyển dụng EIU
+  document_version: '1.18'
+  updated_at: '2026-09-06'
+  business_logic_core:
+    version: '1.2'
+    status: FROZEN
+  design_system:
+    version: '1.8'
+    status: CURRENT_RESPONSIVE_UAT_PENDING
+  technical_architecture:
+    version: '1.18'
+    status: TECHNICAL_SPECIFICATION_FROZEN
+  production_ready: false
+stack_target:
+  frontend: Next.js App Router
+  hosting: Vercel
+  database: Supabase PostgreSQL
+  auth: Supabase Auth
+  storage: Supabase Storage
+  ssr_auth_package: '@supabase/ssr (pinned version + lockfile)'
+  business_timezone: Asia/Ho_Chi_Minh
+identity:
+  internal_users:
+    provider: Google Workspace OAuth
+    email_domain: '@eiu.edu.vn'
+    allowlist_table: app_users
+    active_required: true
+    unbound_email_typo_edit: users.directory_manage
+    bound_identity_rebind: ROOT_ONLY_PHASE1
+  candidates:
+    provider: Supabase Email OTP
+    identity_key: verified email
+    email_editable: false
+    first_login_provisioning: ATOMIC_FIND_OR_CREATE_AND_SAFE_REBIND
+roles:
+  root_admin:
+    count: 1
+    permissions: ALL
+  hr:
+    permission_model: GRANULAR
+    default_permission_set: ALL_HR_PERMISSIONS
+    root_can_revoke: true
+  interviewer:
+    authorization: CONTEXTUAL_BY_CURRENT_PARTICIPATION
+  candidate:
+    authorization: OWN_ACTIVE_ACCOUNT_AND_SUBMISSIONS
+submission:
+  candidate_edit_only_when: NEW
+  open_new:
+    requires:
+    - submissions.view
+    - submissions.status
+    side_effect: NEW -> READ
+  view_only_open: NO_MUTATION
+  closed_can_create_new_application: true
+  status_model:
+    manual_hr:
+    - NEW
+    - READ
+    derived_system:
+    - PROCESSED
+    - DONE
+    - CLOSED
+    manual_allowed_only_when: NO_ACTIVE_APPLICATION
+  authoritative_recalculation: private.recalculate_submission_status with parent Submission row lock
+  parent_inbox_summary: LATEST_SUBMISSION submitted_at DESC, submission_id DESC
+  file_only_save_bumps_version: true
+  candidate_update_hr_notification: SAME_TRANSACTION_EXACT_SUBMISSION_OUTBOX
+  current_profile_refresh: LATEST_SURVIVING_SUBMISSION_AUTHORITATIVE_HELPER
+application:
+  identity:
+  - submission_id
+  - unit_id
+  - department_team_id
+  - position_id
+  candidate_derived_via_submission: true
+  selector_entity: SUBMISSION
+  backend_never_guesses_latest_submission: true
+  exact_duplicate: UPDATE_OR_REACTIVATE_EXISTING_DURABLE_APPLICATION
+  empty_auto_round1_counts_as_used: false
+  reactivate_application: true
+  copy_to_other_application: FILL_STRUCTURALLY_EMPTY_DEFAULT_ROUND1_ELSE_CREATE_NEXT_ROUND
+  identity_semantics: DURABLE_GLOBAL_IDENTITY
+  reactivation_resource_validation: NON_ELAPSED_SCHEDULE_CONFLICT_RELEVANT_CHILDREN
+  identity_fields_mutable: false
+  durable_identity_lookup_precedes_create: true
+  duplicate_identity_rows_allowed: false
+  active_owner_invariant: Active Application -> Active HR/root owner; deactivation/role removal requires reassignment
+  copy_provenance_counts_as_usage: true
+interview_rounds:
+  multi_round_phase1: true
+  current_round: highest round_no among access_active Interviews
+  demo_topic_new_round: BLANK
+  round_no_renumber: false
+  access_active: application.is_active AND interview.is_active
+schedule_conflicts:
+  interval_semantics: '[start_at,end_at)'
+  mandatory_resource_lock: true
+  resources:
+    candidate: BLOCK
+    room: BLOCK
+    interviewer: BLOCK
+  ignore_when:
+  - CANCELLED
+  - ACCESS_INACTIVE
+  - NO_INTERVAL
+  engine_used_by:
+  - save_or_reschedule
+  - copy_interview_schedule
+  - add_participant_when_resource_blocking
+  - readd_participant_when_resource_blocking
+  - reactivate_interview
+  - cancelled_to_active
+  - reactivate_application_non_elapsed_reactivation_conflict_relevant_children
+  resource_blocking: access_active AND schedule_status_code != CANCELLED AND start_at IS NOT NULL AND end_at IS NOT NULL
+  reactivation_conflict_relevant: resource_blocking AND end_at > transaction_now; Application Reactivate only
+  reactivation_past_intervals: FULLY_ELAPSED_DO_NOT_BLOCK_REACTIVATION
+  participant_operational_eligibility: ALL_CURRENT_PARTICIPANTS_REQUIRE_ACTIVE_APP_USER_BEFORE_RESOURCE_BLOCKING
+  participant_inactive_error: CURRENT_PARTICIPANT_INACTIVE_REASSIGN_REQUIRED
+report_form:
+  scoring: false
+  qualitative_fields:
+  - professional_knowledge
+  - necessary_skills
+  - qualities_personality
+  - strengths_limitations
+  - other_comment
+  final_decision_fields:
+  - conclusion
+  - expected_specific_job_assigned
+  - expected_recruitment_time
+  representative_entry_model: true
+  final_source: CURRENT_ROUND latest decision_updated_at; all 3 fields from same report
+  report_status_write_command: change_report_status_ONLY
+  hr_report_note_write_command: update_hr_report_note_ONLY
+  lifecycle_states:
+  - 'ACTIVE_CURRENT: is_active=true,is_archived=false'
+  - 'HISTORICAL_ARCHIVED: is_active=false,is_archived=true'
+notes:
+  interview_note: Interview operational note
+  hr_report_note: HR_ONLY
+upload:
+  allowed_extensions:
+  - pdf
+  - doc
+  - docx
+  - ppt
+  - pptx
+  - png
+  - jpg
+  - jpeg
+  max_file_mb: 5
+  max_current_files_per_submission: 5
+  max_current_files_per_interview: 5
+  protocol: CANDIDATE_FORM_SESSION + TEMP_UPLOAD + MALWARE_SCAN + ATOMIC_SAVE_FINALIZE
+  new_submission_parent_created_only_on_submit: true
+  edit_file_changes_staged_until_save: true
+  cancel_discards_pending_document_changes: true
+  staged_plan_validation_before_commit: true
+  staged_plan_invariants:
+  - OPEN_SESSION
+  - NEW_FORM_ADD_ONLY
+  - RESERVATION_SESSION_TYPE_MATCH
+  - MAX_5_EFFECTIVE_FILES
+  - CURRENT_CV_REQUIRED
+  - CLEAN_VALIDATED_UPLOADS
+  - REPLACE_DELETE_TARGET_EXACTLY_ONE_CURRENT_VERSION_STAGE_AND_SAVE
+  malware_scan_before_finalize: REQUIRED_PRODUCTION
+  image_exif_policy: STRIP_WHERE_PRACTICAL
+  storage: PRIVATE
+  candidate_required:
+  - CV
+  candidate_optional:
+  - Degree
+  - Transcript
+  - Certificate
+  - Other
+retention:
+  automatic_expiry_or_purge: false
+  capacity_warning: true
+  owner_action_when_capacity_low:
+  - UPGRADE_CAPACITY
+  - EXPORT_ARCHIVE_LOCAL_THEN_EXPLICIT_PURGE
+  legal_review_before_go_live: true
+email:
+  model: OUTBOX_ASYNC
+  semantics: AT_LEAST_ONCE_WITH_IDEMPOTENT_LOGICAL_ENQUEUE_AND_BEST_EFFORT_PROVIDER_DEDUP
+  phase1_attachments: false
+  recipient_allowlist_by_type: true
+  user_history_deletable_by_business_rule: true
+  immutable_audit: true
+  submission_trace_fk: true
+  delivery_semantics: AT_LEAST_ONCE_WITH_IDEMPOTENT_LOGICAL_ENQUEUE
+  history_view_permission: emails.history_view
+  history_delete_requires: emails.history_view + emails.history_delete + parent_context + TEST_OR_WRONG_CLASSIFICATION
+  history_cleanup:
+    view_permission: emails.history_view
+    delete_permission: emails.history_delete
+    parent_context_required: true
+    test_rule: TEST_RECORD requires environment_code TEST
+    wrong_rule: WRONG_RECORD requires reason_text + audit
+security:
+  rls_required: true
+  explicit_grants_required: true
+  private_views: true
+  server_reauthorization_required: true
+  secret_key_in_browser: false
+  privacy_acknowledgement_versioned: true
+  web_baseline: 67_WEB_SECURITY_BASELINE.md
+  rate_limit_policy: 68_RATE_LIMIT_POLICY.md
+ui:
+  default_language: vi
+  languages:
+  - vi
+  - en
+  body_min_px: 16
+  table_header_px: 16
+  badge_px: 16
+  wcag_target: 2.2 AA
+  table_layout: semantic table + colgroup + fixed page spec + overflow-x
+  prototype_persona_switcher_production: false
+  candidate_inbox_parent_summary: LATEST_SUBMISSION
+  grouped_pagination:
+    application_inbox: CANDIDATE
+    interview: APPLICATION
+    report: APPLICATION
+  pii_search_in_url: false
+navigation_scope:
+  phase1_rendered:
+  - Phiếu ứng tuyển
+  - Interview
+  - Báo cáo phỏng vấn
+  - Danh mục
+  - Người dùng & Phân quyền when authorized
+  future_hidden:
+  - Dashboard
+  - Nhu cầu tuyển dụng
+  - Candidate Database
+  - KPI & Reports
+pdf:
+  business_data_logic: FROZEN
+  official_layout: DEFERRED_UNTIL_OWNER_TEMPLATE
+technical_gate:
+  status: TECHNICAL_SPECIFICATION_FROZEN_READY_TO_IMPLEMENT
+  gate_sequence:
+  - TECHNICAL_SPECIFICATION_FREEZE
+  - APPROVED_FOR_IMPLEMENTATION
+  - IMPLEMENTATION_VALIDATION_MIGRATION_FREEZE
+  - PRODUCTION_UAT_PRODUCTION_READY
+  technical_specification_freeze: PASS
+  implementation_gate: READY_TO_IMPLEMENT
+  implementation_validation: PENDING_ACTUAL_CODE_EVIDENCE
+  production_ready: false
+  implementation_evidence_required_after_coding:
+  - RLS_ADVERSARIAL
+  - RPC_TRANSACTION
+  - CONCURRENCY_RACE
+  - MIGRATION_CLEAN_INSTALL
+  - STORAGE_MALWARE_CLEANUP
+  - PERFORMANCE_QUERY_PLAN
+  - BACKUP_RESTORE
+  - DEPLOYMENT_ROLLBACK
+  - ACCESSIBILITY
+  - PRODUCTION_UAT
+  owner_visual_uat: PENDING_BEFORE_UI_VISUAL_SIGNOFF_AND_PRODUCTION_UAT
+master_data_history:
+  referenced_structural_semantics: IMMUTABLE
+  change_meaning: CREATE_NEW_AND_INACTIVATE_OLD
+  label_typo_correction: ALLOWED_WITH_AUDIT
+  inactive_historical_reference: OPERABLE_BUT_NOT_SELECTABLE_NEW
+identity_provisioning:
+  internal_first_google_login: verified Google @eiu.edu.vn + active allowlisted app_user + auth_user_id null -> atomic bind
+  bound_identity_rebind: ROOT_ONLY_PHASE1
+  root_break_glass_runbook: REQUIRED_BEFORE_GO_LIVE
+validation_contract:
+  source: validation_contract.yaml
+  notes_and_reports: PLAIN_TEXT
+  raw_html_input: FORBIDDEN
+bulk_semantics:
+  submission_manual_status: ALL_OR_NOTHING
+  bulk_application_assignment: ALL_OR_NOTHING
+  bulk_email: PER_ITEM_RESULT
+  bulk_inactive_delete: ALL_OR_NOTHING_UNLESS_COMMAND_SPEC_SAYS_OTHERWISE
+candidate_lifecycle:
+  reactivation_no_active_application: READ
+  manual_submission_status_requires_candidate_active: false
+candidate_identity:
+  recreated_auth_rebind: VERIFIED_EMAIL_SAFE_REBIND_WITH_ROW_LOCK_AND_AUDIT
+  verified_email_immutable: true
+privacy:
+  notice_authority: SERVER_PUBLISHED_VERSION_PINNED_TO_FORM_SESSION
+  edit_acknowledgement: REQUIRED_PINNED_NOTICE_VERSION_IDEMPOTENT
+  published_content_mutability: IMMUTABLE_CREATE_NEW_VERSION
+  no_current_notice: FAIL_CLOSED_PRIVACY_NOTICE_UNAVAILABLE
+  form_session_notice_selection: is_current=true AND effective_from<=now(); fail PRIVACY_NOTICE_UNAVAILABLE
+  edit_acknowledgement_required: true
+  published_content_immutable: true
+  publication: MAINTENANCE_DEPLOYMENT_ONLY_RUNBOOK_78_NO_GAP_CURRENT_SWITCH
+  publication_runbook: 78_PRIVACY_NOTICE_PUBLICATION_RUNBOOK.md
+internal_user_lifecycle:
+  directory_manager_target: NON_HR_NON_ROOT_ONLY
+  hr_target: ROOT_ONLY
+  self_deactivate_ui: false
+  unused_hard_delete: MAINTENANCE_ONLY_ROOT_UNBOUND_UNREFERENCED_NON_HR
+  active_application_owner_reassignment: REQUIRED_BEFORE_HR_DEACTIVATE_OR_ROLE_REMOVAL
+permissions:
+  unused_delete:
+    candidate: candidates.delete_unused
+  email_history_delete: emails.history_delete
+  email_history_view: emails.history_view
+operations:
+  archive_purge_runbook: 66_DATA_EXPORT_ARCHIVE_PURGE_RUNBOOK.md
+source_governance:
+  registry: source_registry.yaml
+  all_in_one: CURRENT_NORMATIVE_ONLY
+  historical_must_not_override: true
+release_evidence:
+  matrix: 75_RELEASE_EVIDENCE_MATRIX.md
+  dependency_policy: 76_DEPENDENCY_BASELINE_POLICY.md
+  privacy_publication_runbook: 78_PRIVACY_NOTICE_PUBLICATION_RUNBOOK.md
+candidate_update:
+  hr_notification: OUTBOX_SAME_TRANSACTION_EXACT_SUBMISSION
+  notification_quota_must_not_rollback_valid_save: true
+internal_user:
+  hard_delete: MAINTENANCE_ONLY_UNBOUND_NON_HR_NON_ROOT_UNREFERENCED
+version: '1.18'
+batch_operations:
+  candidate_active: bulk_set_candidate_active / ALL_OR_NOTHING
+  submission_manual_status: bulk_set_latest_submission_manual_status / Candidate selection / ALL_OR_NOTHING / deterministic latest Submission preview+version recheck
+  interview_delete_inactive: bulk_delete_or_inactivate_interviews / ALL_OR_NOTHING
+  interview_schedule_status: bulk_change_interview_schedule_status / ALL_OR_NOTHING
+  report_status: bulk_change_report_status / ALL_OR_NOTHING
+  email: bulk_enqueue_email / PER_ITEM_ENQUEUE_RESULT
+master_data:
+  new_or_changed_reference_requires_active: true
+participant_lifecycle:
+  readd_requires_active_user: true
+  deactivate_future_current_participant: BLOCK_UNTIL_REASSIGNED
+submission_delete:
+  production_email_trace_blocks_hard_delete: true
+  mode: MAINTENANCE_ONLY_NON_PRODUCTION_REPAIR
+  normal_hr_production_exposed: false
+responsive_prototype:
+  version: '1.10'
+  status: READY_FOR_OWNER_VISUAL_UAT
+  included_in_full_handover: true
+  authority: Design System v1.8 + Full Handover v1.18
+  status_dropdown: ANCHOR_TO_TRIGGER_BOUNDS_NOT_POINTER
+candidate_form_session:
+  business_validity: OPEN_AND_UNEXPIRED_AT_TRANSACTION_TIME
+  transitions:
+  - OPEN_TO_SUBMITTED
+  - OPEN_TO_CANCELLED
+  - OPEN_TO_EXPIRED
+  terminal_reopen_allowed: false
+  cleanup_worker: HOUSEKEEPING_ONLY
+upload_reservation:
+  stage_and_finalize_requires_unexpired: true
+  expired_error: UPLOAD_RESERVATION_EXPIRED
+submission_manual_status:
+  target: DETERMINISTIC_LATEST_SUBMISSION_ONLY
+interview_upload_cleanup:
+  parent_fk: RESTRICT
+  durable_cleanup_queue: REQUIRED_BEFORE_INTERVIEW_HARD_DELETE
+  orphan_reservation_allowed: false

@@ -1,0 +1,8 @@
+{
+  "@/app/application-inbox-actions": "src/__tests__/fixtures/project-preview/inbox-actions.ts",
+  "@/app/interviews/actions": "src/__tests__/fixtures/project-preview/interview-actions.ts",
+  "@/app/users/actions": "src/__tests__/fixtures/project-preview/admin-actions.ts",
+  "@/app/master-data/actions": "src/__tests__/fixtures/project-preview/admin-actions.ts",
+  "@/app/candidate/candidate-actions": "src/__tests__/fixtures/project-preview/candidate-actions.ts",
+  "@/lib/supabase/client": "src/__tests__/fixtures/project-preview/candidate-actions.ts"
+}

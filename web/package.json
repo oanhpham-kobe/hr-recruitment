@@ -1,0 +1,40 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "biome check",
+    "test": "node --conditions react-server --test --import tsx src/__tests__/*.test.ts",
+    "format": "biome format --write",
+    "design:check": "node scripts/validate-design-contract.mjs",
+    "design:browser": "node --conditions react-server --test --import tsx src/__tests__/design-browser-acceptance.test.ts",
+    "preview:feedback": "node scripts/preview-interview-feedback.mjs",
+    "preview:project": "node scripts/preview-project.mjs",
+    "preview:project:build": "node scripts/preview-project.mjs --build-only"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.6",
+    "@supabase/supabase-js": "^2.115.0",
+    "next": "16.4.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "playwright": "^1.62.1",
+    "tsx": "^4.23.13",
+    "typescript": "6.0.3"
+  }
+}

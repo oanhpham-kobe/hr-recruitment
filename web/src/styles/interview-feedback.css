@@ -1,0 +1,368 @@
+.feedback-page {
+  width: 100%;
+  margin: 0;
+  color: var(--ink-950);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.feedback-page h1 {
+  font-size: 1.75rem;
+  color: var(--eiu-blue);
+}
+.feedback-page h2 {
+  font-size: 1.4rem;
+  margin-top: 1.5rem;
+  color: var(--eiu-blue);
+}
+.feedback-page h3 {
+  font-size: 1.15rem;
+}
+.feedback-page h4 {
+  font-size: 1rem;
+}
+.feedback-page section,
+.feedback-panel {
+  min-width: 0;
+  margin-bottom: 1.5rem;
+}
+.feedback-page fieldset {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.feedback-page legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+}
+.feedback-page p {
+  overflow-wrap: break-word;
+}
+.feedback-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.feedback-field input,
+.feedback-field select,
+.feedback-field textarea {
+  font: inherit;
+  font-weight: 400;
+  min-width: 0;
+  color: inherit;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0.65rem;
+  border: 1px solid var(--ink-600);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.feedback-field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+.feedback-field :disabled {
+  background: var(--canvas);
+  color: var(--ink-600);
+}
+.feedback-check {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  min-height: 44px;
+  font-size: 1rem;
+}
+.feedback-check input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+.feedback-actions button {
+  white-space: normal;
+  height: auto;
+  min-height: 44px;
+}
+.feedback-context,
+.feedback-notice {
+  padding: 1rem;
+  background: var(--status-info-bg);
+  border-left: 4px solid var(--eiu-blue);
+  border-radius: var(--radius-control);
+  margin: 1rem 0;
+}
+.feedback-context p {
+  margin: 0.35rem 0;
+}
+.feedback-error {
+  padding: 1rem;
+  background: var(--status-danger-bg);
+  border-left: 4px solid var(--status-danger-text);
+  color: var(--status-danger-text);
+}
+.feedback-table-scroll {
+  max-width: 100%;
+  max-height: 70dvh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.feedback-page table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 540px;
+  font-size: 1rem;
+}
+.feedback-page caption {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  padding: 12px 0;
+}
+.feedback-page th,
+.feedback-page td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.feedback-page th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-weight: 600;
+  background: var(--status-info-bg);
+}
+.feedback-page td .ui-button {
+  margin: 0.5rem 0;
+  display: inline-flex;
+}
+.feedback-page a {
+  color: var(--eiu-blue);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.feedback-page :focus-visible {
+  outline: 3px solid var(--eiu-blue);
+  outline-offset: 3px;
+}
+.feedback-question {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.feedback-invitations li {
+  padding: 0.6rem 0;
+}
+.feedback-print-report {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  margin-top: 1.5rem;
+}
+.feedback-plain-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.feedback-preview-banner {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  padding: 1rem;
+  font-size: 1rem;
+}
+.feedback-preview-banner select,
+.feedback-preview-banner button {
+  font: inherit;
+  min-height: 44px;
+  margin: 0.35rem;
+}
+@media (max-width: 600px) {
+  .feedback-page h1 {
+    font-size: 1.5rem;
+  }
+  .feedback-page fieldset,
+  .feedback-print-report {
+    padding: 0.75rem;
+  }
+  .feedback-actions {
+    align-items: stretch;
+  }
+  .feedback-actions button {
+    max-width: 100%;
+  }
+  .feedback-preview-banner label {
+    display: block;
+  }
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .feedback-print-report,
+  .feedback-print-report * {
+    visibility: visible;
+  }
+  .feedback-print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: #000;
+    font-size: 12pt;
+  }
+  .feedback-print-report section {
+    break-inside: auto;
+  }
+  .feedback-print-report h2,
+  .feedback-print-report h3,
+  .feedback-print-report h4 {
+    break-after: avoid;
+    color: #000;
+  }
+  .feedback-print-report p {
+    orphans: 3;
+    widows: 3;
+  }
+  .feedback-no-print,
+  .feedback-preview-banner {
+    display: none;
+  }
+  html,
+  body,
+  #app-root,
+  .shell,
+  .shell-main,
+  main.content {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: var(--surface);
+  }
+  .feedback-page {
+    max-width: none;
+    margin: 0;
+  }
+}
+
+@media print {
+  .sidebar,
+  .topbar,
+  .skip-link,
+  .mobile-navigation {
+    display: none;
+  }
+  .feedback-page > :not(:has(.feedback-print-report)) {
+    display: none;
+  }
+  .feedback-page
+    section:has(> .feedback-print-report)
+    > :not(.feedback-print-report) {
+    display: none;
+  }
+}
+
+.feedback-page h1 {
+  margin: 0;
+}
+.feedback-assignment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 20px;
+}
+.feedback-assignment > .feedback-field {
+  margin: 0;
+}
+.feedback-assignment > div,
+.feedback-assignment > p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.feedback-assignment > button {
+  justify-self: start;
+}
+.feedback-assignment input[type="datetime-local"] {
+  max-width: 320px;
+}
+@media (max-width: 640px) {
+  .feedback-assignment {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.feedback-setup {
+  margin-bottom: 12px;
+}
+.feedback-setup > form,
+.feedback-setup > .feedback-actions {
+  margin: 12px;
+}
+
+@container workflow-workspace (max-width: 640px) {
+  .feedback-table-scroll {
+    border: 0;
+    background: transparent;
+    max-height: none;
+  }
+  .feedback-page table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+  .feedback-page thead {
+    display: none;
+  }
+  .feedback-page tbody {
+    display: grid;
+    gap: 12px;
+  }
+  .feedback-page tr {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    padding: 12px;
+  }
+  .feedback-page td {
+    display: grid;
+    grid-template-columns: minmax(80px, 32%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+    overflow-wrap: anywhere;
+  }
+  .feedback-page td::before {
+    content: attr(data-label);
+    color: var(--ink-600);
+    font-weight: 600;
+  }
+  .feedback-page td:first-child {
+    display: block;
+  }
+  .feedback-page td:first-child::before {
+    display: none;
+  }
+  .feedback-page td:last-child {
+    border-bottom: 0;
+  }
+  .feedback-page td .ui-button {
+    margin: 0;
+    min-width: 0;
+  }
+}

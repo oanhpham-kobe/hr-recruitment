@@ -1,0 +1,9 @@
+EIU Recruitment Design System v1.8
+
+Current authority:
+- Full Handover v1.18
+- Design System v1.8 CURRENT
+- Responsive Prototype v1.10 READY FOR OWNER VISUAL UAT / NOT FROZEN
+
+Read 00_README.md first, then TOKENS.md / COMPONENTS.md / PATTERNS.md / TABLE_LAYOUT.md / ACCESSIBILITY.md / RESPONSIVE.md / PAGE_OVERRIDES_V1_8.md.
+Business/security/transaction semantics come from Full Handover v1.18; Design System governs visual/component/accessibility requirements.

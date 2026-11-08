@@ -1,0 +1,498 @@
+{
+  "gender": [
+    {
+      "code": "MALE",
+      "label_vi": "Nam",
+      "active": true,
+      "sort_order": 1,
+      "label_en": "Male"
+    },
+    {
+      "code": "FEMALE",
+      "label_vi": "Nữ",
+      "active": true,
+      "sort_order": 2,
+      "label_en": "Female"
+    }
+  ],
+  "qualification": [
+    {
+      "code": "BACHELOR",
+      "label_vi": "Cử nhân",
+      "active": true,
+      "label_en": "Bachelor's"
+    },
+    {
+      "code": "ENGINEER",
+      "label_vi": "Kỹ sư",
+      "active": true,
+      "label_en": "Engineer"
+    },
+    {
+      "code": "MASTER",
+      "label_vi": "Thạc sĩ",
+      "active": true,
+      "label_en": "Master's"
+    },
+    {
+      "code": "PHD",
+      "label_vi": "Tiến sĩ",
+      "active": true,
+      "label_en": "PhD"
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Khác",
+      "active": true,
+      "label_en": "Other"
+    }
+  ],
+  "position_group": [
+    {
+      "code": "LECTURER",
+      "label_vi": "Giảng viên",
+      "requires_demo_topic": true,
+      "active": true,
+      "label_en": "Lecturer"
+    },
+    {
+      "code": "TEACHING_ASSISTANT",
+      "label_vi": "Trợ giảng",
+      "requires_demo_topic": true,
+      "active": true,
+      "label_en": "Teaching Assistant"
+    },
+    {
+      "code": "STAFF",
+      "label_vi": "Chuyên viên",
+      "requires_demo_topic": false,
+      "active": true,
+      "label_en": "Staff"
+    },
+    {
+      "code": "MANAGEMENT",
+      "label_vi": "Quản lý",
+      "requires_demo_topic": false,
+      "active": true,
+      "label_en": "Management"
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Khác",
+      "requires_demo_topic": false,
+      "active": true,
+      "label_en": "Other"
+    }
+  ],
+  "interview_format": [
+    {
+      "code": "IN_PERSON",
+      "label_vi": "Trực tiếp",
+      "requires_room": true,
+      "requires_meeting_link": false,
+      "active": true,
+      "label_en": "In person"
+    },
+    {
+      "code": "ONLINE",
+      "label_vi": "Online",
+      "requires_room": false,
+      "requires_meeting_link": true,
+      "active": true,
+      "label_en": "Online"
+    }
+  ],
+  "recruitment_source": [
+    {
+      "code": "WEBSITE_EIU",
+      "label_vi": "Website EIU",
+      "label_en": "Website EIU",
+      "active": true
+    },
+    {
+      "code": "RECRUITMENT_EMAIL",
+      "label_vi": "Recruitment Email",
+      "label_en": "Recruitment Email",
+      "active": true
+    },
+    {
+      "code": "LINKEDIN",
+      "label_vi": "LinkedIn",
+      "label_en": "LinkedIn",
+      "active": true
+    },
+    {
+      "code": "FACEBOOK",
+      "label_vi": "Facebook",
+      "label_en": "Facebook",
+      "active": true
+    },
+    {
+      "code": "VIETNAMWORKS",
+      "label_vi": "VietnamWorks",
+      "label_en": "VietnamWorks",
+      "active": true
+    },
+    {
+      "code": "REFERRAL",
+      "label_vi": "Referral",
+      "label_en": "Referral",
+      "active": true
+    },
+    {
+      "code": "ALUMNI",
+      "label_vi": "Alumni",
+      "label_en": "Alumni",
+      "active": true
+    },
+    {
+      "code": "HEADHUNTER",
+      "label_vi": "Headhunter",
+      "label_en": "Headhunter",
+      "active": true
+    },
+    {
+      "code": "JOB_COMMUNITY_GROUP",
+      "label_vi": "Job/Community Group",
+      "label_en": "Job/Community Group",
+      "active": true
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Other",
+      "label_en": "Other",
+      "active": true
+    }
+  ],
+  "document_type": [
+    {
+      "code": "CV_RESUME",
+      "label_vi": "CV/Resume",
+      "label_en": "CV/Resume",
+      "active": true,
+      "scope_code": "SUBMISSION"
+    },
+    {
+      "code": "DEGREE",
+      "label_vi": "Degree",
+      "label_en": "Degree",
+      "active": true,
+      "scope_code": "SUBMISSION"
+    },
+    {
+      "code": "TRANSCRIPT",
+      "label_vi": "Transcript",
+      "label_en": "Transcript",
+      "active": true,
+      "scope_code": "SUBMISSION"
+    },
+    {
+      "code": "LANGUAGE_CERTIFICATE",
+      "label_vi": "Language Certificate",
+      "label_en": "Language Certificate",
+      "active": true,
+      "scope_code": "SUBMISSION"
+    },
+    {
+      "code": "PROFESSIONAL_CERTIFICATE",
+      "label_vi": "Professional Certificate",
+      "label_en": "Professional Certificate",
+      "active": true,
+      "scope_code": "SUBMISSION"
+    },
+    {
+      "code": "SLIDE_DEMO_MATERIAL",
+      "label_vi": "Slide/Demo Material",
+      "label_en": "Slide/Demo Material",
+      "active": true,
+      "scope_code": "INTERVIEW"
+    },
+    {
+      "code": "PUBLICATION",
+      "label_vi": "Publication",
+      "label_en": "Publication",
+      "active": true,
+      "scope_code": "INTERVIEW"
+    },
+    {
+      "code": "PORTFOLIO",
+      "label_vi": "Portfolio",
+      "label_en": "Portfolio",
+      "active": true,
+      "scope_code": "INTERVIEW"
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Other",
+      "label_en": "Other",
+      "active": true,
+      "scope_code": "BOTH"
+    }
+  ],
+  "roles": [
+    {
+      "code": "HR",
+      "label_vi": "Chuyên viên HR",
+      "active": true,
+      "label_en": "HR Specialist"
+    }
+  ],
+  "permissions": [
+    {
+      "code": "submissions.view",
+      "label_vi": "Xem Quản lý phiếu ứng tuyển",
+      "label_en": "View application submissions"
+    },
+    {
+      "code": "submissions.edit",
+      "label_vi": "Chỉnh sửa dữ liệu Phiếu ứng tuyển",
+      "label_en": "Edit application submissions"
+    },
+    {
+      "code": "submissions.status",
+      "label_vi": "Cập nhật trạng thái Phiếu ứng tuyển",
+      "label_en": "Change submission status"
+    },
+    {
+      "code": "candidates.active_manage",
+      "label_vi": "Active/Inactive Candidate",
+      "label_en": "Activate/inactivate candidates"
+    },
+    {
+      "code": "applications.view",
+      "label_vi": "Xem Application",
+      "label_en": "View applications"
+    },
+    {
+      "code": "applications.manage",
+      "label_vi": "Quản lý Application",
+      "label_en": "Manage applications"
+    },
+    {
+      "code": "interviews.view",
+      "label_vi": "Xem Interview",
+      "label_en": "View interviews"
+    },
+    {
+      "code": "interviews.manage",
+      "label_vi": "Tạo/Sửa/Copy/Xóa hoặc Inactive Interview",
+      "label_en": "Create/edit/copy/delete-or-inactivate interviews"
+    },
+    {
+      "code": "interviews.status",
+      "label_vi": "Đổi trạng thái lịch phỏng vấn",
+      "label_en": "Change interview schedule status"
+    },
+    {
+      "code": "interviews.participants",
+      "label_vi": "Quản lý người tham dự",
+      "label_en": "Manage interview participants"
+    },
+    {
+      "code": "interviews.documents",
+      "label_vi": "Quản lý tài liệu phỏng vấn",
+      "label_en": "Manage interview documents"
+    },
+    {
+      "code": "interviews.email",
+      "label_vi": "Gửi email phỏng vấn",
+      "label_en": "Send interview operational emails"
+    },
+    {
+      "code": "reports.view",
+      "label_vi": "Xem Báo cáo phỏng vấn/Preview/PDF",
+      "label_en": "View interview reports/preview/PDF"
+    },
+    {
+      "code": "reports.manage_status",
+      "label_vi": "Quản lý trạng thái/Ghi chú HR của Báo cáo",
+      "label_en": "Manage report status/HR report note"
+    },
+    {
+      "code": "reports.visibility",
+      "label_vi": "Ẩn/Hiện Báo cáo với Interviewer",
+      "label_en": "Hide/show reports to interviewers"
+    },
+    {
+      "code": "reports.edit_interviewer",
+      "label_vi": "Sửa báo cáo của Interviewer",
+      "label_en": "Edit interviewer reports"
+    },
+    {
+      "code": "reports.delete",
+      "label_vi": "Xóa/Inactive báo cáo theo rule",
+      "label_en": "Delete/inactivate reports by rule"
+    },
+    {
+      "code": "master_data.manage",
+      "label_vi": "Quản lý Danh mục",
+      "label_en": "Manage master data"
+    },
+    {
+      "code": "users.directory_manage",
+      "label_vi": "Quản lý danh sách Người dùng nội bộ",
+      "label_en": "Manage internal user directory"
+    },
+    {
+      "code": "users.permissions_manage",
+      "label_vi": "Gán quyền HR - Root Admin only",
+      "label_en": "Assign HR permissions — Root Admin only"
+    },
+    {
+      "code": "users.identity_manage",
+      "label_vi": "Quản lý liên kết danh tính Auth — Root only",
+      "label_en": "Manage bound Auth identity — Root only"
+    },
+    {
+      "code": "candidates.delete_unused",
+      "label_vi": "Hard-delete Candidate chưa sử dụng",
+      "label_en": "Hard-delete unused candidate"
+    },
+    {
+      "code": "emails.history_view",
+      "label_vi": "Xem lịch sử email",
+      "label_en": "View Email History"
+    },
+    {
+      "code": "emails.history_delete",
+      "label_vi": "Xóa lịch sử email vận hành theo rule",
+      "label_en": "Delete operational email history by rule"
+    },
+    {
+      "code": "candidates.identity_manage",
+      "label_vi": "Khôi phục email đăng nhập Candidate",
+      "label_en": "Recover candidate login email identity"
+    }
+  ],
+  "cancellation_reason": [
+    {
+      "code": "CANDIDATE_REQUEST",
+      "label_vi": "Ứng viên yêu cầu",
+      "label_en": "Candidate request",
+      "active": true
+    },
+    {
+      "code": "SCHEDULE_CHANGE",
+      "label_vi": "Thay đổi lịch",
+      "label_en": "Schedule change",
+      "active": true
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Khác",
+      "label_en": "Other",
+      "active": true
+    }
+  ],
+  "rejection_reason": [
+    {
+      "code": "NOT_SUITABLE",
+      "label_vi": "Chưa phù hợp",
+      "label_en": "Not suitable",
+      "active": true
+    },
+    {
+      "code": "WITHDREW",
+      "label_vi": "Ứng viên rút hồ sơ",
+      "label_en": "Candidate withdrew",
+      "active": true
+    },
+    {
+      "code": "OTHER",
+      "label_vi": "Khác",
+      "label_en": "Other",
+      "active": true
+    }
+  ],
+  "hr_default_permissions": [
+    "submissions.view",
+    "submissions.edit",
+    "submissions.status",
+    "candidates.active_manage",
+    "applications.view",
+    "applications.manage",
+    "interviews.view",
+    "interviews.manage",
+    "interviews.status",
+    "interviews.participants",
+    "interviews.documents",
+    "interviews.email",
+    "reports.view",
+    "reports.manage_status",
+    "reports.visibility",
+    "reports.edit_interviewer",
+    "reports.delete",
+    "master_data.manage",
+    "users.directory_manage",
+    "candidates.delete_unused",
+    "emails.history_view",
+    "emails.history_delete"
+  ],
+  "upload_policy": {
+    "allowed_extensions": [
+      "pdf",
+      "doc",
+      "docx",
+      "ppt",
+      "pptx",
+      "png",
+      "jpg",
+      "jpeg"
+    ],
+    "max_files_per_submission": 5,
+    "max_files_per_interview": 5,
+    "max_file_size_bytes": 5242880
+  },
+  "master_semantics": {
+    "referenced_structural_fields": "IMMUTABLE_CREATE_NEW_AND_INACTIVATE_OLD",
+    "display_label_typo_correction": "ALLOWED_WITH_AUDIT",
+    "inactive_reference": "HISTORICAL_RECORD_REMAINS_OPERABLE_NOT_SELECTABLE_NEW"
+  },
+  "phase1_metadata_effects": {
+    "position_groups.requires_demo_topic": "ADVISORY_UI_METADATA_ONLY_NOT_DB_BLOCKING_PHASE1",
+    "cancellation_reason": "OPTIONAL_WHEN_CANCELLED_PHASE1",
+    "rejection_reason": "OPTIONAL_WHEN_REJECTED_PHASE1",
+    "recruitment_source": "OPTIONAL_SUBMISSION_METADATA"
+  },
+  "permission_dependencies": {
+    "submissions.edit": [
+      "submissions.view"
+    ],
+    "submissions.status": [
+      "submissions.view"
+    ],
+    "applications.manage": [
+      "applications.view"
+    ],
+    "interviews.manage": [
+      "interviews.view"
+    ],
+    "interviews.status": [
+      "interviews.view"
+    ],
+    "interviews.participants": [
+      "interviews.view"
+    ],
+    "interviews.documents": [
+      "interviews.view"
+    ],
+    "interviews.email": [
+      "interviews.view"
+    ],
+    "reports.manage_status": [
+      "reports.view"
+    ],
+    "reports.visibility": [
+      "reports.view"
+    ],
+    "reports.edit_interviewer": [
+      "reports.view"
+    ],
+    "reports.delete": [
+      "reports.view"
+    ],
+    "emails.history_delete": [
+      "emails.history_view"
+    ]
+  }
+}

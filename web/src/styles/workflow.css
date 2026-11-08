@@ -1,0 +1,198 @@
+/* CR-UNICOUNCIL-UI-ADAPTATION-20261105: scoped operational hierarchy.
+   Forms, portalled details and report narratives retain the 16px body baseline. */
+.navigation-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+.sidebar-section-label {
+  margin: 0 12px 12px;
+  color: var(--sidebar-heading);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+}
+.sidebar :focus-visible,
+.mobile-nav-panel :focus-visible {
+  outline-color: var(--sidebar-heading);
+}
+.nav-item a[aria-current="page"] {
+  box-shadow: inset 3px 0 var(--eiu-gold);
+}
+.mobile-nav-header .brand-logo {
+  max-width: 180px;
+}
+.mobile-nav-list a {
+  gap: 12px;
+}
+.workspace-context {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--ink-600);
+}
+.workspace-context > :first-child {
+  color: var(--eiu-blue);
+  font-weight: 600;
+}
+.workflow-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.workflow-page-context {
+  position: relative;
+  flex: 0 0 44px;
+  color: var(--ink-600);
+}
+.workflow-page-context > button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-control);
+}
+.workflow-page-context > button svg {
+  width: 20px;
+  height: 20px;
+}
+.workflow-page-context__panel {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(360px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  color: var(--ink-600);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: 0 8px 24px #14406918;
+  font-size: 16px;
+  line-height: 24px;
+}
+.workflow-list-page table :is(th, td) {
+  font-size: 14px;
+  line-height: 21px;
+}
+.workflow-list-page table :is(th, td) strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.workflow-list-page table thead th {
+  color: var(--ink-600);
+  font-weight: 600;
+  background: var(--canvas);
+}
+.workflow-list-page
+  :is(
+    form,
+    fieldset,
+    .workflow-filters,
+    .workflow-pagination,
+    .application-inbox__pagination,
+    .interview-pagination,
+    .users-controls,
+    .master-data-controls
+  )
+  :is(label, summary, button) {
+  font-size: 14px;
+  line-height: 21px;
+}
+.workflow-list-page
+  :is(
+    button,
+    .ui-status-badge,
+    .status-badge,
+    .candidate-status-badge,
+    .users-badge,
+    .master-data-badge
+  ) {
+  font-size: 14px;
+  line-height: 21px;
+}
+.workflow-list-page
+  :is(
+    .ui-button,
+    .btn-secondary,
+    .users-btn-secondary,
+    .master-data-btn-secondary
+  ) {
+  font-weight: 500;
+}
+.workflow-list-page :is(.wrap-anywhere, .meta, small) {
+  color: var(--ink-600);
+  font-size: 14px;
+  line-height: 21px;
+}
+.workflow-list-page .workflow-note-excerpt {
+  color: var(--ink-600);
+}
+.workflow-list-page > :first-child :is(h1, h2) {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.workflow-list-page
+  :is(
+    .application-inbox__toolbar,
+    .interview-filters,
+    .users-controls,
+    .master-data-controls
+  ) {
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+}
+.workflow-list-page input:not([type="checkbox"]),
+.workflow-list-page select {
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .workflow-list-page input:not([type="checkbox"]),
+  .workflow-list-page select {
+    font-size: 14px;
+    line-height: 21px;
+  }
+}
+@media (max-width: 767px) {
+  .workflow-list-page > :first-child :is(h1, h2) {
+    font-size: 22px;
+  }
+}
+
+/* Inbox and admin dialogs are inline descendants; compact list rules must not
+   change their form/body typography. Portalled overlays inherit16px already. */
+.workflow-list-page [role="dialog"],
+.workflow-list-page
+  [role="dialog"]
+  :is(
+    th,
+    td,
+    label,
+    button,
+    input,
+    select,
+    textarea,
+    .ui-status-badge,
+    .status-badge,
+    .candidate-status-badge,
+    .users-badge,
+    .master-data-badge,
+    .wrap-anywhere,
+    .meta,
+    small
+  ) {
+  font-size: 16px;
+  line-height: 24px;
+}

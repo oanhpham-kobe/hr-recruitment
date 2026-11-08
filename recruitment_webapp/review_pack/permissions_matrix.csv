@@ -1,0 +1,29 @@
+﻿capability,candidate,hr_default_full,hr_limited,interviewer,root_admin
+Create submission,Yes,No,No,No,No (normal UI)
+View submission,Own,Yes,If submissions.view,No,Yes
+Open NEW -> READ,No,Yes,Only if submissions.status,No,Yes
+Edit submission,Only NEW; email immutable,Yes,If submissions.edit,No,Yes
+Change submission status,No,Yes,If submissions.status,No,Yes
+Active/Inactive Candidate,No,Yes,If candidates.active_manage,No,Yes
+Manage Application,No,Yes,If applications.manage,No,Yes
+View Application,No,Yes,If applications.view,No,Yes
+Manage Interview,No,Yes,If interviews.manage,Contextual read only,Yes
+Change Interview Status,No,Yes,If interviews.status,Contextual read only,Yes
+Manage participants/documents/email,No,Yes,By corresponding permission,No,Yes
+Own Interviewer report,No,Contextual only if also participant,Contextual only if participant,Yes own,Yes
+Edit another Interviewer report,No,Yes,If reports.edit_interviewer,No,Yes
+Report status/visibility/delete,No,Yes,By corresponding permission,No,Yes
+Master data,No,Yes,If master_data.manage,No,Yes
+Directory business profile,No,Yes,If users.directory_manage,No,Yes
+Correct unbound EIU email typo,No,Yes,If users.directory_manage and auth_user_id NULL,No,Yes
+Rebind bound Auth identity,No,No,No,No,Root only
+Assign/revoke HR permissions,No,No,No,No,Root only
+Hard-delete unused Candidate,No,Yes,If candidates.delete_unused,No,Yes
+View Email History,No,Yes,If emails.history_view + parent context,No,Yes
+Delete Email History,No,Yes,If emails.history_view + emails.history_delete + parent context,No,Yes
+Active/Inactive HR-role internal user,No,No,No — Root only,No,Yes
+Change Application HR owner,No,Yes,If applications.manage,No,Yes
+Candidate email identity recovery,No,No,If candidates.identity_manage,No,Yes
+Manage feedback templates/collections/consolidation,No,Yes,interviews.manage AND reports.view,No,Yes
+Read/submit own feedback invitation,No,Only if exact current participant,Only if exact current participant,Own invitation and allowed context,Only own invitation when participant
+Read consolidated feedback snapshot,No,Yes,interviews.manage AND reports.view,No,Yes

@@ -1,0 +1,10 @@
+﻿page,components
+Login,LanguageSwitcher;Input;Button;InlineError;DemoPersonaSwitcher
+Candidate Form,LanguageSwitcher;FormSection;Input;SearchableCombobox;FileList;PrivacyNoticeAcknowledgement;Button;InlineError
+Phiếu của tôi,LanguageSwitcher;DataTable;StatusBadge;Button
+Quản lý phiếu ứng tuyển,LanguageSwitcher;DataTable;TableScrollContainer;ExpandableDataRow;DetailDrawer;StickyActionToolbar;FilterBar;StatusBadge;StatusDropdown;FileList;FilePreview;AsyncStatus;ConfirmationDialog
+Interview,LanguageSwitcher;DataTable;TableScrollContainer;ExpandableDataRow;DetailDrawer;StickyActionToolbar;FilterBar;SubmissionSelector;MultiSelectCombobox;DependentCombobox;StatusBadge;StatusDropdown;EmailPreview;FileList
+Báo cáo phỏng vấn HR,LanguageSwitcher;DataTable;TableScrollContainer;DetailDrawer;StickyActionToolbar;FilterBar;StatusBadge;StatusDropdown;FilePreview;ConfirmationDialog
+Báo cáo phỏng vấn Interviewer,LanguageSwitcher;DataTable;DetailDrawer;Modal;StatusBadge;FileList;FilePreview;Button
+Danh mục,LanguageSwitcher;DataTable;TableScrollContainer;DetailDrawer;SearchField;StatusBadge;MasterUsageGuard;Button;ConfirmationDialog
+Người dùng & Phân quyền,LanguageSwitcher;DataTable;TableScrollContainer;DetailDrawer;AuthBindingBadge;StatusBadge;Checkbox;ConfirmationDialog

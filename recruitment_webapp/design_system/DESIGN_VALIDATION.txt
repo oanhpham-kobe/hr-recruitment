@@ -1,0 +1,76 @@
+DESIGN VALIDATION — EIU Recruitment Design System v1.8 — 2026-09-03
+TOTAL=73 PASS=73 FAIL=0
+
+PASS | file 00_README.md
+PASS | file MASTER.md
+PASS | file TOKENS.md
+PASS | file COMPONENTS.md
+PASS | file PATTERNS.md
+PASS | file TABLE_LAYOUT.md
+PASS | file RESPONSIVE.md
+PASS | file ACCESSIBILITY.md
+PASS | file AUTH_AND_LOGIN.md
+PASS | file SIDEBAR_NAVIGATION.md
+PASS | file PAGE_OVERRIDES_V1_8.md
+PASS | file DESIGN_REVIEW_CHECKLIST.md
+PASS | file page_component_matrix.csv
+PASS | file component_inventory.csv
+PASS | file CHANGELOG_V1_8.md
+PASS | Version v1.8 current
+PASS | Sidebar title v1.8
+PASS | Table layout title v1.8
+PASS | Tokens title v1.8
+PASS | Page override v1.8 exists
+PASS | Prototype sync target v1.8
+PASS | Application Inbox width arithmetic | sum=1560 stated=1560 expected=1560
+PASS | Interview width arithmetic | sum=1480 stated=1480 expected=1480
+PASS | Báo cáo phỏng vấn HR width arithmetic | sum=1610 stated=1610 expected=1610
+PASS | Drawer legacy 55vw contradiction absent
+PASS | Drawer formula current
+PASS | No generic overflow-wrap anywhere
+PASS | Sticky context columns
+PASS | Single table authority
+PASS | Latest Submission parent summary
+PASS | HR Inbox file components
+PASS | Matrix TableScrollContainer
+PASS | Matrix PrivacyNoticeAcknowledgement
+PASS | Matrix SubmissionSelector
+PASS | Matrix AuthBindingBadge
+PASS | Matrix MasterUsageGuard
+PASS | HR Report scroll container
+PASS | Candidate EDIT Privacy explicit
+PASS | Internal User hard delete absent normal UI
+PASS | SubmissionSelector returns submission_id
+PASS | Email no attachments Phase1
+PASS | Email retry semantics
+PASS | No forbidden email phrase retry must not create duplicate messages
+PASS | No forbidden email phrase prevents duplicate sends
+PASS | No forbidden email phrase retries do not duplicate sends
+PASS | PII search not URL
+PASS | Gold normal text restriction
+PASS | Contrast Success | 5.63:1
+PASS | Contrast Warning | 5.87:1
+PASS | Contrast Danger | 4.55:1
+PASS | Contrast Info | 9.03:1
+PASS | Contrast Neutral | 4.86:1
+PASS | Contrast Purple | 6.63:1
+PASS | 200 percent zoom acceptance
+PASS | 400 percent reflow acceptance
+PASS | Sticky focus acceptance
+PASS | Touch target 44
+PASS | Operational type 16px
+PASS | Component numbering unique | duplicates=[]
+PASS | Components include Privacy
+PASS | Components include Auth binding
+PASS | Components include Master usage
+PASS | No stale v1.5 current operational labels
+PASS | Root effective permissions visible
+PASS | Non-root other permissions hidden
+PASS | Responsive prototype v1.10 authority
+PASS | Design README responsive v1.10 current
+PASS | Status badge 144px benchmark
+PASS | Status menu anchored to trigger
+PASS | Status menu dismiss + focus restore
+PASS | Interview time-first responsive
+PASS | Mobile interview time label width
+PASS | Mobile nav accessibility

@@ -1,0 +1,101 @@
+version: '1.3'
+baseline: Full Handover v1.18 / Design System v1.8 / Responsive Prototype v1.10
+rule: Critical production-intent controls require expected state/navigation/dialog semantics; generic toast-only fallback is insufficient.
+critical_controls:
+- control_id: APP-INBOX-BULK-MANUAL-STATUS
+  page: applications
+  action: bulk latest Submission NEW/READ
+  selection_entity: candidate
+  expected_transition: selected Candidates -> deterministic latest Submissions updated ALL_OR_NOTHING
+  permission: submissions.status
+  prototype_only: false
+- control_id: APP-INBOX-CANDIDATE-LIFECYCLE
+  page: applications
+  action: Candidate Active/Inactive
+  selection_entity: candidate
+  expected_transition: candidate.is_active changes; inactivation preserves Submission status
+  permission: candidates.active_manage
+  prototype_only: false
+- control_id: HR-REPORT-STATUS
+  page: hr-report
+  action: Change Report Status
+  selection_entity: current_interview
+  expected_transition: currentInterview.reportStatus changes; Application outcome is not directly written
+  permission: reports.manage_status
+  prototype_only: false
+- control_id: HR-REPORT-NOTE
+  page: hr-report
+  action: Edit HR Note
+  selection_entity: current_interview
+  expected_transition: Current Interview HR Note changes without decisionUpdatedAt mutation
+  permission: reports.manage_status
+  prototype_only: false
+- control_id: HR-REPORT-VISIBILITY
+  page: hr-report
+  action: Hide/Show Interviewer
+  selection_entity: current_interview
+  expected_transition: Current Interview visibility toggles
+  permission: reports.visibility
+  prototype_only: false
+- control_id: CANDIDATE-FORM-SUBMIT
+  page: candidate-form
+  action: Submit/Save
+  selection_entity: submission_or_form_session
+  expected_transition: CV-required validation; staged docs materialize atomically on valid Save
+  permission: candidate_self
+  prototype_only: false
+- control_id: HR-REPORT-PDF-PREVIEW
+  page: hr-report
+  action: View/Download PDF prototype
+  selection_entity: current_interview
+  expected_transition: opens deterministic PDF preview using current decision source
+  permission: reports.view
+  prototype_only: true
+- control_id: INTERVIEW-SCHEDULE-SAVE
+  page: interview
+  action: Create/Edit interview schedule
+  selection_entity: interview
+  expected_transition: valid schedule requires active current Participants then Candidate/Room/Interviewer conflict-free commit
+  permission: interviews.manage
+  prototype_only: false
+- control_id: INTERVIEW-COPY
+  page: interview
+  action: Copy interview schedule
+  selection_entity: source_interview_and_target_application
+  expected_transition: fill structurally empty target Round1 else create next legal round; copy logistics; Demo Topic blank
+  permission: interviews.manage
+  prototype_only: false
+- control_id: INTERVIEW-SINGLE-SCHEDULE-STATUS
+  page: interview
+  action: Single Interview Schedule Status
+  selection_entity: interview
+  expected_transition: exact Interview changes schedule status only after Active current-Participant eligibility and Candidate/Room/Interviewer conflict recheck when target is resource-blocking
+  permission: interviews.status
+  prototype_only: false
+  browser_qa:
+  - RQA-SCH-STATUS-01
+  - RQA-SCH-STATUS-03
+  - RQA-SCH-STATUS-04
+  - RQA-SCH-STATUS-05
+- control_id: INTERVIEW-BULK-SCHEDULE-STATUS
+  page: interview
+  action: Bulk Interview Schedule Status
+  selection_entity: interview
+  expected_transition: selected Interviews change schedule status ALL_OR_NOTHING only after Active current-Participant eligibility and Candidate/Room/Interviewer conflict recheck
+  permission: interviews.status
+  prototype_only: false
+  browser_qa:
+  - RQA-SCH-STATUS-02
+  - RQA-SCH-STATUS-06
+- control_id: INTERVIEW-COPY-SAVE
+  page: interview
+  action: Save Copy Interview Schedule
+  selection_entity: interview/application
+  expected_transition: client Copy draft commits only through copy_interview_schedule; atomically fill structurally empty target Round1 or create next legal round with provenance, Active-Participant and Candidate/Room/Interviewer conflict guards
+  permission: interviews.manage
+  prototype_only: false
+  browser_qa:
+  - RP-COPY-01
+  - RP-COPY-02
+  - RP-COPY-03
+  - RP-COPY-04

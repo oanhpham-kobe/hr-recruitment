@@ -1,0 +1,406 @@
+name: Integration CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      full_verification:
+        description: "Broaden to web + database verification for an explicit slice/shared-contract gate"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  impact:
+    name: Resolve impacted verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      web: ${{ steps.scope.outputs.web }}
+      db: ${{ steps.scope.outputs.db }}
+    steps:
+      - name: Checkout impact range
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 2
+
+      - name: Resolve impacted domains
+        id: scope
+        shell: bash
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          FORCE_FULL: ${{ github.event_name == 'workflow_dispatch' && inputs.full_verification || false }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
+        run: |
+          set -euo pipefail
+
+          web=false
+          db=false
+          force_full=false
+
+          if [ "$FORCE_FULL" = "true" ] || grep -Fq '[full-ci]' <<< "$COMMIT_MESSAGE"; then
+            force_full=true
+          fi
+
+          if [ "$force_full" = "true" ]; then
+            web=true
+            db=true
+            printf '%s\n' 'FULL VERIFICATION REQUESTED (broadening only)'
+          else
+            base="$BEFORE"
+            zero=0000000000000000000000000000000000000000
+            if [ -z "$base" ] || [ "$base" = "$zero" ]; then
+              # Root commit has no parent: diff against the empty tree (full run).
+              base="$(git rev-parse -q --verify 'HEAD^' || git hash-object -t tree /dev/null)"
+            else
+              git fetch origin "$base" --depth=1 || true
+            fi
+
+            git diff --name-only "$base" "$AFTER" > /tmp/changed-files.txt
+            printf '%s\n' 'Changed files:'
+            cat /tmp/changed-files.txt
+
+            while IFS= read -r path; do
+              [ -n "$path" ] || continue
+              case "$path" in
+                web/src/lib/storage/*|web/src/lib/commands/storage-reservation.ts|web/src/__tests__/storage-cleanup-local.integration.ts|web/package.json|web/package-lock.json)
+                  web=true
+                  db=true
+                  ;;
+                web/*)
+                  web=true
+                  ;;
+                supabase/*)
+                  db=true
+                  ;;
+                recruitment_webapp/*)
+                  web=true
+                  db=true
+                  ;;
+                .github/workflows/integration-ci.yml)
+                  web=true
+                  db=true
+                  ;;
+                AGENTS.md|CLAUDE.md|GEMINI.md|REVIEW.md|SKILLS.md|SKILLS_LOCK.yaml|STATUS.md|README.md|.omp/*|.agents/*|scripts/*|.github/workflows/agents-ci.yml)
+                  ;;
+                .github/*)
+                  web=true
+                  db=true
+                  ;;
+                *)
+                  web=true
+                  db=true
+                  ;;
+              esac
+            done < /tmp/changed-files.txt
+          fi
+
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "db=$db" >> "$GITHUB_OUTPUT"
+          echo "Resolved impact: web=$web db=$db"
+
+  verify-web:
+    name: Web verification
+    needs: impact
+    if: needs.impact.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 24.20.0
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Ensure npm 11.19.0
+        shell: bash
+        run: |
+          if [ "$(npm --version)" != "11.19.0" ]; then
+            npm install --global npm@11.19.0
+          fi
+          test "$(npm --version)" = "11.19.0"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Validate production design contract
+        run: npm run design:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://project.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: test-publishable-key
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test affected web domain acceptance set
+        run: npm run test
+
+  db-integration:
+    name: Database integration
+    needs: impact
+    if: needs.impact.outputs.db == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js for physical Storage integration
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 24.20.0
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Ensure npm 11.19.0 for Storage integration
+        run: |
+          if [ "$(npm --version)" != "11.19.0" ]; then npm install --global npm@11.19.0; fi
+          test "$(npm --version)" = "11.19.0"
+
+      - name: Install web dependencies for physical Storage integration
+        run: npm ci --prefix web
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1.6.0
+        with:
+          version: 2.116.0
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Replay migrations from zero
+        run: supabase db reset
+
+      - name: Execute TASK-S08-001 Accepted Application Inbox SQL Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/application_inbox_read.sql
+
+      - name: Execute TASK-S08-001 Search Hardening Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/application_inbox_search_hardening_test.sql
+
+      - name: Execute PRE-S04 Database Integration & Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/pre_s04_contract_repairs_test.sql
+
+      - name: Execute TASK-S05-001 Interviewer Report Contextual Read Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/interviewer_report_contextual_read_test.sql
+
+      - name: Execute TASK-S05-002 HR Report Management Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/hr_report_management_test.sql
+
+      - name: Execute TASK-S05-002 HR Report DTO Privacy Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/hr_report_dto_privacy_test.sql
+
+      - name: Execute TASK-S06-001 Master Data Canonical Seed & Guard Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/master_data_seed_guard_test.sql
+
+      - name: Execute TASK-S06-001 Master Data Lifecycle & History Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -U postgres -d postgres < supabase/tests/master_data_lifecycle_history_test.sql
+
+      - name: Execute TASK-S06-001 Durable Reason History Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/master_data_reason_history_test.sql
+
+      - name: Execute TASK-S06-001 Durable Semantic Reference History Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/master_data_durable_reference_history_test.sql
+
+      - name: Execute TASK-S06-001 Historical Candidate Document Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/master_data_candidate_document_history_test.sql
+
+      - name: Execute TASK-S06-001 Manage-Only Inactive Read Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/master_data_management_read_test.sql
+
+      - name: Execute TASK-S06-001 Master Data Concurrent Idempotency Regression Assertions
+        run: |
+          bash supabase/tests/master_data_idempotency_concurrency_test.sh
+
+      - name: Execute TASK-S06-001 Interview Format First-Use Race Regression Assertions
+        run: |
+          bash supabase/tests/master_data_interview_format_race_test.sh
+
+      - name: Execute TASK-S06-002 Internal User/RBAC/Identity Focused Regression Assertions
+        run: |
+          bash supabase/tests/internal_user_rbac_identity_test.sh
+
+      - name: Execute TASK-S06-002 Internal User Lifecycle Concurrency Assertions
+        run: |
+          bash supabase/tests/internal_user_lifecycle_concurrency_test.sh
+
+      - name: Execute Slice-06 Copy/User Concurrency Composition Assertions
+        run: |
+          bash supabase/tests/copy_interview_schedule_concurrency_test.sh
+
+      - name: Execute crossed Application reactivation and participant contract regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/application_reactivation_and_participant_contract_repair_test.sql
+
+      - name: Execute crossed Interview lifecycle regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/interview_lifecycle_test.sql
+
+      - name: Execute crossed Interview round/conflict regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/interview_round_and_conflict_locking_test.sql
+
+      - name: Execute crossed Interview copy regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/copy_interview_schedule_test.sql
+
+      - name: Execute REC-04 transaction correctness regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/recovery_transaction_correctness_test.sql
+
+      - name: Execute REC-04 existing opposing concurrency regressions
+        run: |
+          bash supabase/tests/recovery_transaction_concurrency_test.sh
+
+      - name: Execute REC-04 forward lock-composition concurrency regressions
+        run: |
+          bash supabase/tests/recovery_rec04_forward_concurrency_test.sh
+
+      - name: Execute REC-04 Package 009 residual deadlock regressions
+        run: |
+          bash supabase/tests/recovery_rec04_residual_deadlock_test.sh
+
+      - name: Execute REC-05 Candidate save and HR open concurrency boundaries
+        run: bash supabase/tests/recovery_rec05_concurrency_test.sh
+
+      - name: Execute REC-15 HR aggregate edit concurrency boundaries
+        run: bash supabase/tests/recovery_rec15_concurrency_test.sh
+
+      - name: Seed REC-03 F02 confidentiality fixture
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/recovery_confidentiality_fixture.sql
+
+      - name: Execute REC-03 F02 confidentiality post-repair assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/recovery_confidentiality_post_repair.sql
+
+      - name: Execute TASK-S07-001 Email Persistence Regression Assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/email_persistence_contracts_test.sql
+
+      - name: Execute TASK-S07-001 staged worker concurrency assertions
+        run: |
+          bash supabase/tests/email_persistence_concurrency_test.sh
+
+      - name: Execute TASK-S07-002 document scan protocol regression assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/document_scan_protocol_test.sql
+
+      - name: Execute TASK-S07-002 document scan claim and fencing concurrency assertions
+        run: |
+          bash supabase/tests/document_scan_protocol_concurrency_test.sh
+
+
+      - name: Execute TASK-S07-003 storage cleanup contract regression assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/storage_cleanup_contract_test.sql
+
+      - name: Execute TASK-S07-003 storage cleanup concurrency/fencing assertions
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: |
+          bash supabase/tests/storage_cleanup_contract_concurrency_test.sh
+
+      - name: Execute TASK-S07-003 storage cleanup upgrade-path assertions
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: |
+          bash supabase/tests/storage_cleanup_upgrade_path_test.sh
+
+      - name: Execute REC-18 Master Data Lifecycle & Concurrency Assertions
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: |
+          bash supabase/tests/recovery_rec18_master_data_lifecycle_test.sh
+
+      - name: Execute REC-19 Users & Permissions Lifecycle & RBAC Assertions
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: |
+          bash supabase/tests/recovery_rec19_users_permissions_test.sh
+      - name: Reset local database for standalone bulk replay
+        run: supabase db reset
+
+      - name: Execute crossed bulk Application assignment regressions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/bulk_commands_replay.sql
+
+      - name: Reset local database for physical Storage integration
+        run: supabase db reset
+
+      - name: Execute cleanup worker capability binding assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/storage_cleanup_worker_binding_test.sql
+
+      - name: Execute real local physical Storage integration
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: bash supabase/tests/storage_cleanup_local_storage_test.sh
+
+      - name: Execute internal interview feedback authorization and snapshot assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/internal_interview_feedback_test.sql
+
+      - name: Execute internal interview feedback lifecycle and concurrency assertions
+        run: python3 supabase/tests/internal_interview_feedback_concurrency_test.py --container supabase_db_eiu-recruitment-dev
+
+      - name: Execute private Drive binding and worker authorization assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/drive_object_locations_test.sql
+
+      - name: Execute provider-partitioned worker claim assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/provider_partitioned_claims_test.sql
+
+      - name: Execute private Drive provider and lifecycle races
+        env:
+          CONTAINER_NAME: supabase_db_eiu-recruitment-dev
+        run: bash supabase/tests/drive_object_locations_concurrency_test.sh
+
+      - name: Lint local database at error level
+        run: supabase db lint --local --level error
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop

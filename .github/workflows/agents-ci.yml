@@ -1,0 +1,49 @@
+name: Agents CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "AGENTS.md"
+      - "REVIEW.md"
+      - "SKILLS.md"
+      - "SKILLS_LOCK.yaml"
+      - ".agents/**"
+      - ".omp/**"
+      - "scripts/**"
+      - ".github/workflows/agents-ci.yml"
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "REVIEW.md"
+      - "SKILLS.md"
+      - "SKILLS_LOCK.yaml"
+      - ".agents/**"
+      - ".omp/**"
+      - "scripts/**"
+      - ".github/workflows/agents-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Agent setup validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install validator dependency
+        run: python -m pip install --disable-pip-version-check "PyYAML==6.0.2"
+
+      - name: Validate skills, agents and MCP configuration
+        run: python scripts/validate_agents.py

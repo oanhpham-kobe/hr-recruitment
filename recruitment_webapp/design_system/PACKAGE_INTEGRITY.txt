@@ -1,0 +1,4 @@
+Package: EIU Recruitment Design System v1.8
+Validation target: 73/73 PASS, 0 FAIL
+Current responsive executable reference: Responsive Prototype v1.10
+Embedded in Full Handover v1.18; integrity is covered by the parent ZIP checksum and this Design manifest.

@@ -1,0 +1,1197 @@
+version: '1.18'
+commands:
+- command: provision_candidate_identity
+  actor: candidate_verified
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-AUTH-05
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: start_candidate_form_session
+  actor: candidate_owner
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-UP-01
+  - AC-PRIV-SESSION-01
+  - AC-PRIV-CURRENT-01
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - pin_current_effective_privacy_notice
+  - capture_base_submission_version_for_edit
+  writes: []
+  guarantees: []
+- command: reserve_candidate_form_upload
+  actor: candidate_owner
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-UP-03
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: stage_candidate_document_change
+  actor: candidate_owner
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-UP-05
+  - AC-DOC-TARGET-01
+  - AC-DOC-TARGET-02
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_current_target_for_replace_delete
+  writes: []
+  guarantees:
+  - replace_delete_exactly_one_current_target
+- command: cancel_candidate_form_session
+  actor: candidate_owner
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-UP-02
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: submit_candidate_submission
+  actor: candidate_owner
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-UP-01
+  - AC-PRIV-STG-01
+  audit: REQUIRED_WHERE_DEFINED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - privacy_acknowledgement
+  - strong_current_privacy_verification
+  - refresh_candidate_current_profile
+  - enqueue_hr_notification_exact_submission
+  - materialize_documents
+  writes: []
+  guarantees:
+  - reject_hr_only_fields
+  - canonical_candidate_fields_only
+  - privacy_notice_changed_rejection
+- command: update_candidate_submission
+  actor: candidate_owner_NEW
+  permission: candidate_self
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-04
+  - AC-CAND-UPD-EMAIL-01
+  - AC-CONC-DOC-01
+  - AC-PRIV-EDIT-01
+  - AC-PRIV-STG-01
+  - AC-NOTIFY-01
+  - AC-DOC-TARGET-03
+  - AC-DOC-TARGET-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - privacy_acknowledgement
+  - strong_current_privacy_verification
+  - refresh_candidate_current_profile_if_latest
+  - enqueue_hr_notification_exact_submission
+  - materialize_staged_documents
+  - bump_submission_aggregate_version
+  writes: []
+  guarantees:
+  - save_time_current_target_recheck
+  - max_five_current_files
+  - current_cv_required
+  - preserve_hr_only_fields
+  - canonical_candidate_fields_only
+  - privacy_notice_changed_rejection
+- command: open_submission
+  actor: hr
+  permission: submissions.view
+  authorization:
+    base_permission: submissions.view
+    conditional_mutation:
+      when: submission.status_code == NEW
+      permission: submissions.status
+      writes:
+      - submissions.status_code
+      transition: NEW_TO_READ
+      otherwise: PURE_READ
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-01
+  - AC-OPEN-SUB-01
+  - AC-OPEN-SUB-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - conditional_new_to_read
+  writes:
+  - submissions.status_code_when_authorized_and_new
+  guarantees:
+  - submissions_view_always_required
+  - submissions_status_required_only_for_new_to_read_mutation
+- command: update_submission_by_hr
+  actor: hr
+  permission: submissions.edit
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - refresh_candidate_current_profile_if_latest
+  - bump_submission_aggregate_version
+  writes: []
+  guarantees: []
+- command: mutate_submission_documents_by_hr
+  actor: hr
+  permission: submissions.edit
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-DOC-HR-01
+  - AC-DOC-TARGET-01
+  - AC-DOC-TARGET-02
+  - AC-DOC-TARGET-03
+  - AC-DOC-TARGET-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_current_target_for_replace_delete
+  - bump_submission_aggregate_version
+  - audit
+  writes: []
+  guarantees:
+  - save_time_current_target_recheck
+  - max_five_current_files
+  - current_cv_required
+- command: set_submission_manual_status
+  actor: hr
+  permission: submissions.status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-STAT-01
+  - AC-STAT-LATEST-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - resolve_and_lock_deterministic_latest_submission
+  - verify_expected_latest_submission_id
+  - verify_no_active_application
+  - audit
+  writes: []
+  guarantees:
+  - historical_submission_status_read_only
+  - single_bulk_latest_only_parity
+  input_entity: candidate
+- command: recalculate_submission_status
+  actor: system
+  permission: internal
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-STAT-02
+  - AC-STAT-03
+  - AC-STAT-04
+  - AC-STAT-05
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: delete_unused_submission
+  actor: root_maintenance
+  permission: MAINTENANCE_ONLY
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-SUB-DEL-REACH-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - reject_retained_production_email_usage
+  - refresh_candidate_current_profile
+  - audit
+  writes: []
+  guarantees:
+  - normal_production_submitted_submission_not_hard_deleted
+  exposure: NOT_NORMAL_PRODUCTION_HR_UI
+- command: delete_unused_candidate
+  actor: hr
+  permission: candidates.delete_unused
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-46
+  - AC-CAND-DEL-SESSION-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - cancel_open_form_sessions
+  - durable_storage_cleanup_enqueue
+  - audit
+  writes: []
+  guarantees: []
+- command: set_candidate_active
+  actor: hr
+  permission: candidates.active_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-CAND-REACT-01
+  - AC-CAND-INACTIVE-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - set_or_clear_inactive_metadata
+  - recalculate_all_candidate_submissions_by_reactivation_rule
+  - audit
+  writes: []
+  guarantees: []
+- command: create_or_update_application
+  actor: hr
+  permission: applications.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-12
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - recalculate_submission_status
+  - audit
+  writes: []
+  guarantees:
+  - durable_application_identity
+  - eligible_active_owner_when_active
+- command: update_application_hr_owner
+  actor: hr
+  permission: applications.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-12H
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: reactivate_application
+  actor: hr
+  permission: applications.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-APP-REACT-04
+  - AC-APP-REACT-05
+  - AC-RESOURCE-01
+  - AC-OWNER-LIFE-01
+  - AC-APP-REACT-PAST-01
+  - AC-PART-OPER-03
+  - AC-PART-OPER-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_or_reassign_eligible_active_owner
+  - revalidate_non_elapsed_reactivation_conflict_relevant_children
+  - restore_access_active
+  - recalculate_submission_status
+  - audit
+  - validate_current_participants_operationally_eligible_for_reactivated_children
+  writes: []
+  guarantees:
+  - fully_elapsed_intervals_do_not_block_reactivation
+- command: delete_or_inactivate_application
+  actor: hr
+  permission: applications.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-46
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - recalculate_submission_status
+  - audit
+  writes: []
+  guarantees: []
+- command: create_next_interview_round
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-16
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - recalculate_submission_status_when_current_changes
+  - audit
+  writes: []
+  guarantees: []
+- command: copy_interview_schedule
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-23
+  - AC-COPY-03
+  - AC-COPY-CMD-01
+  - AC-RP-COPY-01
+  - AC-ROUND-PROV-01
+  - AC-PART-OPER-COPY-01
+  audit: REQUIRED
+  idempotency: REQUIRED
+  side_effects:
+  - resolve_target_round_by_structurally_empty_default_round_rule
+  - validate_current_participants_operationally_eligible
+  - shared_candidate_room_interviewer_conflict_recheck
+  - record_copied_from_interview_id
+  - recalculate_submission_status_when_current_changes
+  - audit
+  writes:
+  - interviews.schedule_fields
+  - interviews.copied_from_interview_id
+  - interview_participants.current_set
+  guarantees:
+  - ONE_UI_MUTATION_ONE_TRUSTED_COMMAND
+  - atomic_fill_round1_or_create_next_round
+  - demo_topic_blank_for_new_round
+  - copy_provenance_counts_as_usage
+  - no_inactive_current_participant
+  - candidate_room_interviewer_conflict_safe
+- command: save_interview_schedule
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-SCH-09
+  - AC-PART-OPER-01
+  - AC-PART-OPER-02
+  - AC-PART-OPER-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_current_participants_operationally_eligible
+  - shared_candidate_room_interviewer_conflict_recheck
+  writes: []
+  guarantees:
+  - no_resource_blocking_interview_with_inactive_current_participant
+- command: change_interview_schedule_status
+  actor: hr
+  permission: interviews.status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-16
+  - AC-PART-OPER-01
+  - AC-PART-OPER-02
+  - AC-PART-OPER-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_current_participants_operationally_eligible
+  - shared_candidate_room_interviewer_conflict_recheck
+  writes: []
+  guarantees:
+  - no_resource_blocking_interview_with_inactive_current_participant
+- command: reactivate_interview
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-16
+  - AC-PART-OPER-01
+  - AC-PART-OPER-02
+  - AC-PART-OPER-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_current_participants_operationally_eligible
+  - revalidate_schedule_conflicts
+  - recalculate_submission_status_when_current_changes
+  - audit
+  - shared_candidate_room_interviewer_conflict_recheck
+  writes: []
+  guarantees:
+  - no_resource_blocking_interview_with_inactive_current_participant
+- command: delete_or_inactivate_interview
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-16
+  - AC-INT-UP-FK-01
+  - AC-INT-UP-DEL-01
+  - AC-INT-UP-DEL-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - capture_interview_temp_objects_into_durable_cleanup_queue_before_hard_delete
+  - cancel_and_remove_interview_upload_reservations_after_cleanup_capture
+  - recalculate_submission_status_when_outcome_changes
+  - audit
+  writes: []
+  guarantees:
+  - no_orphan_interview_upload_reservation_or_temp_object
+- command: add_interview_participant
+  actor: hr
+  permission: interviews.participants
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-SCH-09
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: remove_interview_participant
+  actor: hr
+  permission: interviews.participants
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-18
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: readd_interview_participant
+  actor: hr
+  permission: interviews.participants
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-18
+  - AC-PART-RESTORE-01
+  - AC-PART-RESTORE-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - restore_or_create_participant_report
+  - revalidate_schedule_conflict_when_resource_blocking
+  - audit
+  writes: []
+  guarantees: []
+- command: reorder_interview_participants
+  actor: hr
+  permission: interviews.participants
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-18
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: reserve_interview_upload
+  actor: hr
+  permission: interviews.documents
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-53
+  - AC-INT-UP-FK-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: finalize_interview_upload
+  actor: hr
+  permission: interviews.documents
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-53
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: delete_interview_document
+  actor: hr
+  permission: interviews.documents
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-53
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: save_interviewer_report
+  actor: participant_or_authorized_hr
+  permission: CONDITIONAL_OR
+  authorization:
+    any_of:
+    - branch: interviewer_own_report
+      requires:
+      - current_participant_context
+      - own_report_only
+    - branch: authorized_hr
+      requires:
+      - reports.view
+      - reports.edit_interviewer
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-26T
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: update_hr_report_note
+  actor: hr
+  permission: reports.manage_status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-HR-NOTE-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes:
+  - interviews.hr_report_note
+  guarantees:
+  - hr_only_note
+  - no_report_status_write
+  - no_submission_recalc
+- command: change_report_status
+  actor: hr
+  permission: reports.manage_status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-REPORT-STATUS-01
+  - AC-REPORT-STATUS-02
+  - AC-REPORT-STATUS-03
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - recalculate_submission_status
+  - audit
+  writes:
+  - interviews.report_status_code
+  guarantees:
+  - single_report_status_writer
+  - current_round_only
+  - same_transaction_submission_recalc
+- command: set_report_visibility
+  actor: hr
+  permission: reports.visibility
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-42
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: delete_or_inactivate_report
+  actor: hr
+  permission: reports.delete
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-46
+  - AC-REPORT-LIFE-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees:
+  - canonical_report_lifecycle
+- command: enqueue_email
+  actor: hr_or_system
+  permission: contextual_email_permission
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-55
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: delete_email_history
+  actor: hr
+  permission: emails.history_view + emails.history_delete + parent_context
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-EMAIL-HIST-01
+  - AC-EMAIL-HIST-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - validate_parent_context
+  - validate_cleanup_classification
+  - security_audit
+  writes: []
+  guarantees:
+  - test_only_if_test_environment
+  - wrong_requires_reason
+- command: bulk_create_or_update_applications
+  actor: hr
+  permission: applications.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-12
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - recalculate_affected_submission_statuses
+  - audit
+  writes: []
+  guarantees: []
+- command: bulk_enqueue_email
+  actor: hr
+  permission: contextual_email_permission
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-55
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: create_master_item
+  actor: hr
+  permission: master_data.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-MASTER-03
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: update_master_item
+  actor: hr
+  permission: master_data.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-MASTER-03
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: delete_or_inactivate_master_item
+  actor: hr
+  permission: master_data.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-MASTER-03
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: create_internal_user
+  actor: hr_or_root
+  permission: users.directory_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-AUTH-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: provision_internal_identity_on_first_google_login
+  actor: verified_internal
+  permission: identity_provision
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-AUTH-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: set_internal_user_active
+  actor: hr_or_root
+  permission: users.directory_manage/root
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-USR-ACT-01
+  - AC-OWNER-LIFE-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - block_active_application_owner_without_reassignment
+  - block_nonelapsed_resource_blocking_current_participant_without_reassignment
+  - security_audit
+  writes: []
+  guarantees:
+  - active_user_lifecycle_cannot_strand_future_current_participant
+- command: assign_hr_role_with_defaults
+  actor: root
+  permission: root_only
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: remove_hr_role
+  actor: root
+  permission: root_only
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  - AC-OWNER-LIFE-02
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - block_active_application_owner_without_reassignment
+  - revoke_hr_permissions
+  - security_audit
+  writes: []
+  guarantees: []
+- command: update_internal_user_directory
+  actor: hr
+  permission: users.directory_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-AUTH-04
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: change_internal_user_identity
+  actor: root
+  permission: users.identity_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: root_admin_break_glass_recovery
+  actor: break_glass
+  permission: root_recovery
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: grant_hr_permission
+  actor: root
+  permission: users.permissions_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: revoke_hr_permission
+  actor: root
+  permission: users.permissions_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-39
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects: []
+  writes: []
+  guarantees: []
+- command: bulk_set_candidate_active
+  actor: hr
+  permission: candidates.active_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  acceptance:
+  - AC-BULK-01
+  - AC-BULK-CAND-LIFE-01
+  - AC-BULK-CAND-LIFE-02
+  side_effects:
+  - set_or_clear_inactive_metadata_per_candidate
+  - recalculate_all_candidate_submissions_by_reactivation_rule
+  - audit_per_candidate
+  - audit_batch_event
+  writes:
+  - candidates.is_active
+  - candidates.inactive_at
+  - candidates.inactive_by
+  guarantees:
+  - ALL_OR_NOTHING
+  - candidate_selection_entity
+  - single_candidate_lifecycle_parity
+- command: bulk_set_latest_submission_manual_status
+  actor: hr
+  permission: submissions.status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  acceptance:
+  - AC-BULK-01
+  - AC-STAT-MANUAL-READ-01
+  - AC-STAT-MANUAL-NEW-01
+  - AC-STAT-MANUAL-NOAPP-01
+  side_effects:
+  - resolve_and_lock_latest_submission_per_selected_candidate
+  - audit_per_changed_submission
+  - audit_batch_event
+  writes:
+  - submissions.status_code
+  guarantees:
+  - ALL_OR_NOTHING
+  - candidate_selection_entity
+  - NEW_OR_READ_ONLY
+  - no_active_application_for_manual_state
+  - latest_submission_preview_revalidated
+  selection_entity: candidate
+  inputs:
+  - candidate_ids
+  - status
+  - expected_latest_submission_ids
+  - expected_versions
+- command: bulk_delete_or_inactivate_interviews
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  acceptance:
+  - AC-BULK-01
+  - AC-BULK-INT-DEL-01
+  - AC-INT-UP-DEL-01
+  side_effects:
+  - prevalidate_and_capture_temp_cleanup_for_every_hard_delete_target
+  - apply_single_interview_delete_inactive_policy
+  - recalculate_affected_submission_statuses
+  writes:
+  - interviews.is_active
+  guarantees:
+  - ALL_OR_NOTHING
+  - exact_interview_selection
+- command: bulk_change_interview_schedule_status
+  actor: hr
+  permission: interviews.status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  acceptance:
+  - AC-BULK-01
+  - AC-PART-OPER-BULK-01
+  - AC-BULK-SCH-01
+  - AC-SCH-CANDIDATE-BULK-01
+  - AC-SCH-ROOM-BULK-01
+  - AC-SCH-INTERVIEWER-BULK-01
+  side_effects:
+  - validate_current_participants_operationally_eligible
+  - shared_candidate_room_interviewer_conflict_recheck
+  - normalize_format_reason_fields
+  writes:
+  - interviews.schedule_status_code
+  guarantees:
+  - ALL_OR_NOTHING
+  - exact_interview_selection
+  - no_resource_blocking_interview_with_inactive_current_participant
+- command: bulk_change_report_status
+  actor: hr
+  permission: reports.manage_status
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  acceptance:
+  - AC-BULK-01
+  - AC-BULK-REPORT-01
+  side_effects:
+  - resolve_current_round_under_lock
+  - recalculate_affected_submission_statuses
+  writes:
+  - interviews.report_status_code
+  guarantees:
+  - ALL_OR_NOTHING
+  - current_round_only
+- command: reschedule_confirmed_interview
+  actor: hr
+  permission: interviews.manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-RESCHED-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - shared_candidate_room_interviewer_conflict_recheck
+  - update_schedule_and_reset_status_awaiting
+  writes:
+  - interviews.schedule_status_code
+  - interviews.start_at
+  - interviews.end_at
+  - interviews.interview_format_id
+  - interviews.room_id
+  - interviews.meeting_link
+  guarantees:
+  - confirmed_status_required
+  - atomic_rollback_on_conflict
+- command: correct_submission_candidate_fields_by_hr
+  actor: hr
+  permission: submissions.edit
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-CAND-CORR-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - refresh_candidate_current_profile_if_latest
+  - audit_changed_field_names
+  writes:
+  - submissions.full_name
+  - submissions.phone
+  - submissions.date_of_birth
+  - submissions.gender_code
+  - submissions.current_address
+  - submissions.version_no
+  guarantees:
+  - submission_row_lock
+  - optimistic_version_check
+  - allowed_fields_only_full_name_phone_dob_gender_address
+  - audit_field_names_no_full_pii_dump
+- command: recover_candidate_email_identity
+  actor: root_or_delegated_hr
+  permission: candidates.identity_manage
+  contract_file: 37_BACKEND_COMMAND_CONTRACTS.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance:
+  - AC-CAND-REC-01
+  audit: REQUIRED
+  idempotency: REQUIRED_FOR_MUTATION_RETRY_WHERE_APPLICABLE
+  side_effects:
+  - update_auth_and_candidate_identity
+  - revoke_obsolete_sessions
+  writes:
+  - candidates.email
+  - candidates.auth_user_id
+  guarantees:
+  - root_or_explicit_identity_manage_permission
+  - unique_new_email
+  - historical_submission_email_snapshot_preserved
+- command: publish_interview_feedback_template
+  actor: active_bound_internal_hr_or_root
+  permission: interviews.manage AND reports.view
+  contract_file: 101_INTERNAL_INTERVIEW_FEEDBACK.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-IF-01, AC-IF-02]
+  audit: REQUIRED
+  idempotency: REQUIRED
+  side_effects: [publish_new_immutable_version]
+  writes: [private.interview_feedback_templates]
+  guarantees: [post_wait_authorization, existing_versions_unchanged]
+- command: create_interview_feedback_collection
+  actor: active_bound_internal_hr_or_root
+  permission: interviews.manage AND reports.view
+  contract_file: 101_INTERNAL_INTERVIEW_FEEDBACK.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-IF-01, AC-IF-03, AC-IF-06]
+  audit: REQUIRED
+  idempotency: REQUIRED
+  side_effects: [persist_provider_paused_notification_intents]
+  writes: [private.interview_feedback_collections, private.interview_feedback_invitations, private.interview_feedback_notification_intents]
+  guarantees: [exact_current_round, exact_current_participants, post_wait_authorization, unique_interview_collection, no_outbound_delivery]
+- command: save_interview_feedback_response
+  actor: active_bound_internal_invitation_owner
+  permission: exact_participant_context
+  contract_file: 101_INTERNAL_INTERVIEW_FEEDBACK.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-IF-01, AC-IF-04, AC-IF-06]
+  audit: REQUIRED
+  idempotency: IDENTICAL_SUBMIT_REPLAY_WITHOUT_DUPLICATE_AUDIT
+  side_effects: []
+  writes: [private.interview_feedback_invitations]
+  guarantees: [optimistic_version, post_wait_authorization, required_questions_on_submit, immutable_submission, deadline_check]
+- command: revoke_interview_feedback_invitation
+  actor: active_bound_internal_hr_or_root
+  permission: interviews.manage AND reports.view
+  contract_file: 101_INTERNAL_INTERVIEW_FEEDBACK.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-IF-01, AC-IF-05, AC-IF-06]
+  audit: REQUIRED
+  idempotency: TERMINAL_STATE_AND_OPTIMISTIC_VERSION
+  side_effects: []
+  writes: [private.interview_feedback_invitations]
+  guarantees: [post_wait_authorization, original_denominator_retained]
+- command: save_interview_feedback_consolidation
+  actor: active_bound_internal_hr_or_root
+  permission: interviews.manage AND reports.view
+  contract_file: 101_INTERNAL_INTERVIEW_FEEDBACK.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-IF-01, AC-IF-05, AC-IF-06, AC-IF-07]
+  audit: REQUIRED
+  idempotency: UNIQUE_COLLECTION_AND_OPTIMISTIC_VERSION
+  side_effects: []
+  writes: [private.interview_feedback_consolidations]
+  guarantees: [post_wait_authorization, complete_original_evaluator_set, pinned_snapshot, immutable_approval, no_legacy_outcome_mutation]
+- command: bind_candidate_drive_object
+  actor: drive_storage_worker
+  permission: verified_candidate_session_context
+  contract_file: 102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-DRIVE-01, AC-DRIVE-02, AC-DRIVE-04]
+  audit: REQUIRED
+  idempotency: IMMUTABLE_ALIAS_AND_DRIVE_ID
+  side_effects: []
+  writes: [private.storage_object_locations, public.upload_reservations]
+  guarantees: [ordered_parent_locks, no_mixed_provider_writes]
+- command: claim_drive_upload_attempt
+  actor: drive_storage_worker
+  permission: verified_candidate_session_context
+  contract_file: 102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-DRIVE-01, AC-DRIVE-03, AC-DRIVE-04]
+  audit: REQUIRED
+  idempotency: LEASE_AND_FENCING_TOKEN
+  side_effects: []
+  writes: [private.storage_object_locations]
+  guarantees: [bounded_write_window, create_only_provider]
+- command: seal_drive_upload_attempt
+  actor: drive_storage_worker
+  permission: current_lease_and_verified_candidate_session_context
+  contract_file: 102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-DRIVE-01, AC-DRIVE-03]
+  audit: REQUIRED
+  idempotency: FENCED_IMMUTABLE_EVIDENCE
+  side_effects: []
+  writes: [private.storage_object_locations, public.upload_reservations]
+  guarantees: [no_clean_verdict, no_content_overwrite]
+- command: resolve_drive_scan_attempt
+  actor: document_scan_worker
+  permission: current_scan_attempt_worker_and_fence
+  contract_file: 102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-DRIVE-01, AC-DRIVE-03]
+  audit: EXISTING_SCAN_CLAIM
+  idempotency: READ_ONLY
+  side_effects: []
+  writes: []
+  guarantees: [sealed_fingerprint, live_context]
+- command: authorize_drive_document_read
+  actor: drive_storage_worker
+  permission: verified_internal_actor_root_or_submissions_view
+  contract_file: 102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md
+  coverage_file: 55_COMMAND_COVERAGE_MATRIX.md
+  acceptance: [AC-DRIVE-01, AC-DRIVE-05]
+  audit: REQUIRED
+  idempotency: EACH_ACCESS_AUDITED
+  side_effects: []
+  writes: [public.security_audit_log]
+  guarantees: [exact_document_context, sealed_clean_evidence, current_actor_permission]
+error_codes:
+- CONTEXT_NOT_WRITABLE
+- DEADLINE_PASSED
+- REQUIRED_ANSWER_MISSING
+- ALREADY_SUBMITTED
+- INVITATION_REVOKED
+- COMPLETENESS_REQUIRED
+- ALREADY_APPROVED
+- UNAUTHENTICATED
+- FORBIDDEN
+- NOT_FOUND
+- INVALID_STATE
+- VALIDATION_ERROR
+- STALE_VERSION
+- FORM_SESSION_EXPIRED
+- UPLOAD_RESERVATION_EXPIRED
+- DUPLICATE_APPLICATION
+- APPLICATION_DURABLE_IDENTITY_IMMUTABLE
+- PRIVACY_NOTICE_UNAVAILABLE
+- PRIVACY_NOTICE_CHANGED
+- SCHEDULE_CONFLICT_CANDIDATE
+- SCHEDULE_CONFLICT_INTERVIEWER
+- SCHEDULE_CONFLICT_ROOM
+- LATEST_ROUND_REQUIRED
+- ROOT_ADMIN_PROTECTED
+- IDENTITY_REBIND_FORBIDDEN
+- USER_INACTIVE
+- UPLOAD_LIMIT_EXCEEDED
+- UNSUPPORTED_FILE_TYPE
+- MALWARE_SCAN_REQUIRED
+- IDEMPOTENCY_REPLAY
+- INVALID_PERMISSION_DEPENDENCY
+- INACTIVE_DOCUMENT_TYPE
+- INVALID_DOCUMENT_TYPE
+- INVALID_FILE_TYPE
+- FILE_SIZE_EXCEEDED
+- INVALID_ACTION
+- INVALID_CONTENT_SIGNATURE
+- INVALID_MIME_TYPE
+- INVALID_DOCUMENT_TARGET
+- UPLOAD_RESERVATION_NOT_CLEAN
+- MAX_FIVE_CURRENT_DOCUMENTS_EXCEEDED
+- REQUIRED_CV_DOCUMENT_MISSING
+- HISTORICAL_SUBMISSION_READ_ONLY
+- ALREADY_EXISTS_INACTIVE
+- INVALID_HIERARCHY
+- INTERNAL_ERROR
+- CURRENT_PARTICIPANT_INACTIVE_REASSIGN_REQUIRED
+- INACTIVE_QUALIFICATION_NOT_SELECTABLE
+- ACTIVE_APPLICATION_OWNER_REASSIGN_REQUIRED
+- FUTURE_INTERVIEW_PARTICIPANT_REASSIGN_REQUIRED
+- USER_INACTIVE_NOT_SELECTABLE

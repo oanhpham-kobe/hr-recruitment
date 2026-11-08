@@ -1,0 +1,23 @@
+﻿status_layer,code,label_vi,label_en,color_or_note,candidate_view,interviewer_view
+Submission,NEW,Mới,New,,Mới,
+Submission,READ,Đã đọc,Read,,Đang xử lý,
+Submission,PROCESSED,Đang xử lý,Processed,,Đang xử lý,
+Submission,DONE,Hoàn tất,Done,,Hoàn thành,
+Submission,CLOSED,Đóng,Closed,,Hoàn thành,
+CandidateAccount,INACTIVE,Inactive,Inactive,Portal blocked,Không truy cập Portal,
+InterviewSchedule,AVAILABLE,Sẵn sàng,Available,Đỏ,,
+InterviewSchedule,SCHEDULED,Đã xếp lịch,Scheduled,Xanh dương,,
+InterviewSchedule,AWAITING,Chờ xác nhận,Awaiting,Cam,,
+InterviewSchedule,CONFIRMED,Đã xác nhận,Confirmed,Xanh lá; edit locked,,
+InterviewSchedule,CANCELLED,Hủy,Cancelled,Xám,,
+InterviewReportRound,INTERVIEW_SCHEDULING,Chờ xếp lịch,Interview Scheduling,,,Chờ xếp lịch
+InterviewReportRound,AWAITING_INTERVIEW,Chờ phỏng vấn,Awaiting Interview,,,Chờ phỏng vấn
+InterviewReportRound,WAITING_FOR_REPORT,Chờ báo report,Waiting for Report,,,Chờ báo report
+InterviewReportRound,REPORT_SUBMITTED,Đã gửi Báo cáo,Report Submitted,,,Đã gửi Báo cáo
+InterviewReportRound,FOLLOW_UP,Theo dõi thêm,Follow-up,,,Đã gửi Báo cáo
+InterviewReportRound,ON_HOLD,Hoãn,On Hold,,,Đã gửi Báo cáo
+InterviewReportRound,HIRED,Tuyển dụng,Hired,Final for interviewer edit,,Đã gửi Báo cáo
+InterviewReportRound,REJECTED,Từ chối,Rejected,Final for interviewer edit,,Từ chối
+ApplicationOutcome,IN_PROGRESS,Đang xử lý,In Progress,Derived from current round,,
+ApplicationOutcome,HIRED,Tuyển dụng,Hired,Derived,,
+ApplicationOutcome,REJECTED,Từ chối,Rejected,Derived,,
