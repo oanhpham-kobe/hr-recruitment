@@ -373,6 +373,10 @@ jobs:
         run: |
           docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/storage_cleanup_worker_binding_test.sql
 
+      - name: Execute email worker capability binding assertions
+        run: |
+          docker exec -i supabase_db_eiu-recruitment-dev psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/tests/email_worker_binding_test.sql
+
       - name: Execute real local physical Storage integration
         env:
           CONTAINER_NAME: supabase_db_eiu-recruitment-dev

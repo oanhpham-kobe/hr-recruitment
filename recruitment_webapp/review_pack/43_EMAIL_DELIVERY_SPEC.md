@@ -20,6 +20,8 @@ Frozen business rule remains: HR may delete wrong/test Email History. The immuta
 ## Provider
 Production uses approved custom SMTP/provider with SPF/DKIM/DMARC. Auth OTP and recruitment operational email may share infrastructure but have separate templates/rate limits/telemetry.
 
+Owner decision 10/11/2026: the provider for recruitment operational email is the Gmail API of the EIU Google Workspace, sending as one dedicated mailbox authorized with the `gmail.send` scope only. The delivery worker is the web application's `/api/cron/email-delivery` route, invoked every minute by the gateway cron (doc 102) and acting as the narrow `email_worker` database role. It sends only the recipients, subject and body released by `authorize_email_send` for that exact attempt, and maps provider outcomes to `SENT`, `RETRYABLE_FAILURE` or `PERMANENT_FAILURE` with the four accepted error codes. Internal interview-feedback notification intents (doc 101) are not delivered by this worker.
+
 ## Phase 1 attachment policy
 System-generated email attachments are **deferred beyond Phase 1**. Outbox does not resolve mutable logical documents for sending. Preview and send use recipient/subject/body only.
 

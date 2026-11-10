@@ -422,11 +422,12 @@ test("scheduled scan never reports CLEAN for changed bytes or a provider failure
 test("scheduled run pings app cron routes with the secret, independent of Drive state", async () => {
   const run = scheduledFetcher(() => new Response(bytes));
   await runScheduled(env, run.fetcher);
-  assert.deepEqual(
-    run.pings.map((ping) => ping.url),
-    [`${env.APP_ORIGIN}/api/cron/storage-cleanup`],
-  );
-  assert.equal(run.pings[0].authorization, `Bearer ${env.CRON_SECRET}`);
+  assert.deepEqual(run.pings.map((ping) => ping.url).sort(), [
+    `${env.APP_ORIGIN}/api/cron/email-delivery`,
+    `${env.APP_ORIGIN}/api/cron/storage-cleanup`,
+  ]);
+  for (const ping of run.pings)
+    assert.equal(ping.authorization, `Bearer ${env.CRON_SECRET}`);
 
   const unverified = scheduledFetcher(() => new Response(bytes));
   await assert.rejects(
@@ -436,7 +437,7 @@ test("scheduled run pings app cron routes with the secret, independent of Drive 
     ),
     /SCHEDULES_NOT_CONFIGURED/,
   );
-  assert.equal(unverified.pings.length, 1);
+  assert.equal(unverified.pings.length, 2);
   assert.equal(unverified.completions.length, 0);
 });
 test("a failing app cron route does not stop Drive scan and cleanup work", async () => {
