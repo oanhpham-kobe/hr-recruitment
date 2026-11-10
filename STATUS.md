@@ -41,6 +41,7 @@ Candidate.
 | Feature | Missing |
 |---|---|
 | Private Google Drive document storage | Owner decision 2026-11-10: Drive is the only store for new files and Drive's own malware scan is the verdict source (doc 102, CR-DRIVE-NATIVE-SCAN-20261110). Database layer, gateway worker (wrangler build, every-minute cron), browser upload/preview/download transport and the `/api/cron/storage-cleanup` route are in code with unit tests. Missing: hosted deployment, OAuth credentials, AC-DRIVE-05 evidence, EICAR test, worker CPU measurement on the Cloudflare free plan. Interview documents have no Drive binding yet |
+| Email delivery | Owner decision 2026-11-10: Gmail API of the EIU Workspace (doc 43). Delivery runner, Gmail provider, `/api/cron/email-delivery` and the `email_worker` runtime binding migration are in code with unit and SQL tests. Missing: OAuth credentials, hosted `private.email_configuration` (delivery is paused by default), a real send on staging, Owner-approved email copy |
 | Search / performance / ops / release hardening | Indexed inbox search done; the remaining release-hardening work is not yet specified |
 
 ## D. Before production

@@ -302,7 +302,7 @@ export async function handleRequest(
   return response;
 }
 /** Background jobs that live in the web app (it holds their credentials). */
-const APP_CRON_PATHS = ["/api/cron/storage-cleanup"];
+const APP_CRON_PATHS = ["/api/cron/email-delivery", "/api/cron/storage-cleanup"];
 export async function runScheduled(
   env: Env,
   fetcher: Fetcher = fetch,
