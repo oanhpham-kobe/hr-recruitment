@@ -301,11 +301,38 @@ export async function handleRequest(
   }
   return response;
 }
+/** Background jobs that live in the web app (it holds their credentials). */
+const APP_CRON_PATHS = ["/api/cron/storage-cleanup"];
 export async function runScheduled(
   env: Env,
   fetcher: Fetcher = fetch,
 ): Promise<void> {
   configured(env);
+  // Started first and awaited last: app jobs must not wait for, or be skipped
+  // by, Drive work. A failed ping is simply retried by the next tick.
+  const appJobs = Promise.allSettled(
+    APP_CRON_PATHS.map((path) =>
+      boundedFetch(
+        fetcher,
+        `${env.APP_ORIGIN}${path}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
+        },
+        async (response) => {
+          await response.body?.cancel();
+        },
+        25_000,
+      ),
+    ),
+  );
+  try {
+    await runDriveJobs(env, fetcher);
+  } finally {
+    await appJobs;
+  }
+}
+async function runDriveJobs(env: Env, fetcher: Fetcher): Promise<void> {
   if (env.DRIVE_SCHEDULES_VERIFIED !== "true")
     throw new DriveError("SCHEDULES_NOT_CONFIGURED");
   const worker = crypto.randomUUID();
@@ -333,36 +360,15 @@ export async function runScheduled(
         args,
         fetcher,
       );
-      const bytes = await drive.verified(location);
-      outcome = await boundedFetch(
-        fetcher,
-        env.SCANNER_URL,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${env.SCANNER_TOKEN}`,
-            "Content-Type": "application/octet-stream",
-            "X-Content-SHA256": location.checksum_sha256,
-          },
-          body: Uint8Array.from(bytes),
-        },
-        async (response) => {
-          if (!response.ok) throw new DriveError("SCANNER_UNAVAILABLE");
-          const verdict = (await response.json()) as {
-            outcome?: string;
-            sha256?: string;
-          };
-          if (
-            verdict.sha256 !== location.checksum_sha256 ||
-            !["CLEAN", "INFECTED"].includes(verdict.outcome ?? "")
-          )
-            throw new DriveError("INVALID_SCAN_VERDICT");
-          return verdict.outcome ?? "ERROR";
-        },
-        30_000,
-      );
-    } catch {
-      /* A missing or invalid scanner never becomes CLEAN. */
+      // Verdict source is Drive's own malware scan (spec 102): it serves a
+      // file only if it has not flagged it. CLEAN additionally requires the
+      // served bytes to match the sealed size and SHA-256.
+      await drive.verified(location);
+      outcome = "CLEAN";
+    } catch (error) {
+      // Anything else (changed bytes, outage, lost access) stays ERROR.
+      if (error instanceof DriveError && error.code === "DRIVE_FLAGGED_ABUSIVE")
+        outcome = "INFECTED";
     }
     try {
       await rpc(

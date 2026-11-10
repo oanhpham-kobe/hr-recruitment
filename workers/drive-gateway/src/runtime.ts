@@ -19,8 +19,8 @@ export interface Env {
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_REFRESH_TOKEN: string;
   GOOGLE_PRIVATE_FOLDER_ID: string;
-  SCANNER_URL: string;
-  SCANNER_TOKEN: string;
+  /** Shared with the web app; authorizes the scheduled pings of /api/cron/*. */
+  CRON_SECRET: string;
 }
 export type Location = {
   provider_file_id: string;
@@ -47,19 +47,14 @@ export function configured(env: Env): void {
       secret: env.GOOGLE_CLIENT_SECRET,
       refresh: env.GOOGLE_REFRESH_TOKEN,
       folder: env.GOOGLE_PRIVATE_FOLDER_ID,
-      scanner: env.SCANNER_URL,
-      scannerToken: env.SCANNER_TOKEN,
     }).some((value) => !value) ||
     !env.DRIVE_GRANT_SECRET ||
-    env.DRIVE_GRANT_SECRET.length < 32
+    env.DRIVE_GRANT_SECRET.length < 32 ||
+    !env.CRON_SECRET ||
+    env.CRON_SECRET.length < 32
   )
     throw new DriveError("NOT_CONFIGURED");
-  for (const url of [
-    env.APP_ORIGIN,
-    env.GATEWAY_ORIGIN,
-    env.SUPABASE_URL,
-    env.SCANNER_URL,
-  ]) {
+  for (const url of [env.APP_ORIGIN, env.GATEWAY_ORIGIN, env.SUPABASE_URL]) {
     if (new URL(url).protocol !== "https:")
       throw new DriveError("NOT_CONFIGURED");
   }
@@ -199,6 +194,19 @@ export class GoogleDrive {
       `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media`,
       { headers: this.headers() },
       async (response) => {
+        if (response.status === 403) {
+          // Without acknowledgeAbuse Drive refuses files its own malware scan
+          // flagged. That refusal is the only INFECTED signal this system has.
+          const body = (await response.json().catch(() => null)) as {
+            error?: { errors?: Array<{ reason?: string }> };
+          } | null;
+          if (
+            body?.error?.errors?.some(
+              (item) => item.reason === "cannotDownloadAbusiveFile",
+            )
+          )
+            throw new DriveError("DRIVE_FLAGGED_ABUSIVE", 403);
+        }
         if (!response.ok)
           throw new DriveError(
             response.status === 404

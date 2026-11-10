@@ -34,8 +34,7 @@ const env: Env = {
   GOOGLE_CLIENT_SECRET: "test",
   GOOGLE_REFRESH_TOKEN: "test",
   GOOGLE_PRIVATE_FOLDER_ID: "test",
-  SCANNER_URL: "https://scanner.example",
-  SCANNER_TOKEN: "test",
+  CRON_SECRET: "test-only-cron-secret-long-enough",
 };
 const bytes = new TextEncoder().encode("%PDF-test bytes");
 function grant(): DriveGrant {
@@ -314,12 +313,21 @@ test("generic Drive 404 is not successful cleanup", async () => {
   );
   await assert.rejects(drive.remove("id"), /DELETE_UNCONFIRMED/);
 });
-test("scheduled workers use provider-specific claims and exact fences; invalid verdict never CLEAN", async () => {
+/** Scheduled-run harness: one claimed scan and one claimed cleanup job. */
+function scheduledFetcher(driveRead: () => Response | Promise<Response>) {
   const completions: Record<string, unknown>[] = [];
+  const pings: Array<{ url: string; authorization: string | null }> = [];
   const fetcher: typeof fetch = async (input, init) => {
     const url = String(input);
     const args =
       init?.body && typeof init.body === "string" ? JSON.parse(init.body) : {};
+    if (url.startsWith(`${env.APP_ORIGIN}/api/cron/`)) {
+      pings.push({
+        url,
+        authorization: new Headers(init?.headers).get("Authorization"),
+      });
+      return Response.json({ ok: true });
+    }
     if (url.includes("oauth2")) return Response.json({ access_token: "test" });
     if (url.includes("claim_drive_document_scan_requests"))
       return Response.json({
@@ -338,9 +346,7 @@ test("scheduled workers use provider-specific claims and exact fences; invalid v
         checksum_sha256: await sha256(bytes),
         actual_size_bytes: bytes.length,
       });
-    if (url.includes("alt=media")) return new Response(bytes);
-    if (url === env.SCANNER_URL)
-      return Response.json({ outcome: "CLEAN", sha256: "wrong-hash" });
+    if (url.includes("alt=media")) return driveRead();
     if (url.includes("complete_document_scan_attempt")) {
       completions.push(args);
       return Response.json({ success: true, data: {} });
@@ -370,13 +376,84 @@ test("scheduled workers use provider-specific claims and exact fences; invalid v
     }
     throw new Error(`Unexpected route ${url}`);
   };
-  await runScheduled(env, fetcher);
-  assert.equal(completions[0].p_outcome, "ERROR");
-  assert.equal(completions[0].p_fencing_token, "fence");
-  assert.equal(completions[1].p_success, false);
-  assert.equal(completions[1].p_fencing_token, "fence2");
+  return { fetcher, completions, pings };
+}
+test("scheduled scan reports CLEAN only for exact sealed bytes Drive agreed to serve", async () => {
+  const run = scheduledFetcher(() => new Response(bytes));
+  await runScheduled(env, run.fetcher);
+  assert.equal(run.completions[0].p_outcome, "CLEAN");
+  assert.equal(run.completions[0].p_error_code, null);
+  assert.equal(run.completions[0].p_fencing_token, "fence");
+  assert.equal(run.completions[1].p_success, false);
+  assert.equal(run.completions[1].p_fencing_token, "fence2");
+});
+test("scheduled scan reports INFECTED when Drive refuses the file as abusive", async () => {
+  const run = scheduledFetcher(() =>
+    Response.json(
+      {
+        error: {
+          code: 403,
+          errors: [{ reason: "cannotDownloadAbusiveFile" }],
+        },
+      },
+      { status: 403 },
+    ),
+  );
+  await runScheduled(env, run.fetcher);
+  assert.equal(run.completions[0].p_outcome, "INFECTED");
+  assert.equal(run.completions[0].p_error_code, null);
+});
+test("scheduled scan never reports CLEAN for changed bytes or a provider failure", async () => {
+  for (const driveRead of [
+    () => new Response(new TextEncoder().encode("%PDF-evil bytes")),
+    () => new Response(null, { status: 500 }),
+    () =>
+      Response.json(
+        { error: { errors: [{ reason: "insufficientFilePermissions" }] } },
+        { status: 403 },
+      ),
+  ]) {
+    const run = scheduledFetcher(driveRead);
+    await runScheduled(env, run.fetcher);
+    assert.equal(run.completions[0].p_outcome, "ERROR");
+    assert.equal(run.completions[0].p_error_code, "PROVIDER_UNAVAILABLE");
+  }
+});
+test("scheduled run pings app cron routes with the secret, independent of Drive state", async () => {
+  const run = scheduledFetcher(() => new Response(bytes));
+  await runScheduled(env, run.fetcher);
+  assert.deepEqual(
+    run.pings.map((ping) => ping.url),
+    [`${env.APP_ORIGIN}/api/cron/storage-cleanup`],
+  );
+  assert.equal(run.pings[0].authorization, `Bearer ${env.CRON_SECRET}`);
+
+  const unverified = scheduledFetcher(() => new Response(bytes));
   await assert.rejects(
-    runScheduled({ ...env, DRIVE_SCHEDULES_VERIFIED: "false" }, fetcher),
+    runScheduled(
+      { ...env, DRIVE_SCHEDULES_VERIFIED: "false" },
+      unverified.fetcher,
+    ),
     /SCHEDULES_NOT_CONFIGURED/,
   );
+  assert.equal(unverified.pings.length, 1);
+  assert.equal(unverified.completions.length, 0);
+});
+test("a failing app cron route does not stop Drive scan and cleanup work", async () => {
+  const run = scheduledFetcher(() => new Response(bytes));
+  const fetcher: typeof fetch = async (input, init) => {
+    if (String(input).startsWith(`${env.APP_ORIGIN}/api/cron/`))
+      throw new Error("app unavailable");
+    return run.fetcher(input, init);
+  };
+  await runScheduled(env, fetcher);
+  assert.equal(run.completions.length, 2);
+});
+test("gateway config needs a cron secret and no external scanner", async () => {
+  const run = scheduledFetcher(() => new Response(bytes));
+  await assert.rejects(
+    runScheduled({ ...env, CRON_SECRET: "short" }, run.fetcher),
+    /NOT_CONFIGURED/,
+  );
+  assert.equal(run.pings.length, 0);
 });
