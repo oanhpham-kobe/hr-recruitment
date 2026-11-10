@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "eiu-private-drive-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-05",
+  "workers_dev": true,
+  "preview_urls": false,
+  "placement": { "region": "aws:ap-southeast-1" },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false }
+  },
+  // Every minute: Drive scan and cleanup (only once DRIVE_SCHEDULES_VERIFIED
+  // is "true") plus the pings of the web app's /api/cron/* routes.
+  // Every runtime value in src/runtime.ts `Env` is provisioned as a secret
+  // (`wrangler secret bulk`), never committed here.
+  "triggers": { "crons": ["* * * * *"] }
+}

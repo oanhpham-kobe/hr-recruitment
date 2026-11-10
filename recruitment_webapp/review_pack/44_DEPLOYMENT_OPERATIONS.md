@@ -101,7 +101,7 @@ No automatic business-data purge. Monitor purchased DB/Storage quota and alert A
 
 ## Form-session, malware and recovery operations
 - Deploy a scheduled cleanup for expired Candidate Form Sessions/temp uploads with metrics and alerting.
-- Malware scanning service/process is a go-live dependency because legacy external Office formats are accepted.
+- Malware scanning service/process is a go-live dependency because legacy external Office formats are accepted. CR-DRIVE-NATIVE-SCAN-20261110: that process is Google Drive's own scan through the Drive gateway (doc 102), not a separately hosted scanner.
 - Root Admin break-glass procedure is documented in `61_ROOT_ADMIN_BREAK_GLASS_RECOVERY.md` and must be rehearsed in staging.
 - Monitor Storage capacity and staged-upload backlog separately from final document storage.
 

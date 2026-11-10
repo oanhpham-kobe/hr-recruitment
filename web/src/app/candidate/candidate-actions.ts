@@ -24,6 +24,7 @@ import {
   reserveCandidateFormUpload,
   stageCandidateDocumentChange,
 } from "@/lib/commands/storage-reservation";
+import { expectedMimeForFilename } from "@/lib/storage/buckets";
 import {
   createDriveTransport,
   driveLocation,
@@ -619,7 +620,9 @@ export async function reserveUploadAction(input: {
       bucket: reservation.temp_bucket,
       path: reservation.temp_path,
       filename: reservation.original_filename,
-      mimeType: reservation.declared_mime_type ?? input.declaredMimeType ?? "",
+      // The gateway and the seal command both require the type implied by
+      // the extension; browsers often declare none for Office files.
+      mimeType: expectedMimeForFilename(reservation.original_filename) ?? "",
       maxBytes: reservation.expected_max_size_bytes,
     });
     return {

@@ -111,11 +111,39 @@ retained historical versions continue blocking cleanup. Generic Drive 404 is
 not proof of absence: reconcile access and exact identity before success.
 No Supabase-to-Drive copy/switch/replica cleanup protocol is introduced.
 
+## Malware verdict source and scheduled work
+
+CR-DRIVE-NATIVE-SCAN-20261110. On 10/11/2026 the Owner decided that this
+internal deployment runs no separate scanner service (no always-on host, no
+recurring cost) and that Drive is the only store for new files. For Drive-bound
+objects the verdict source is Google Drive's own malware scan. The scan worker
+downloads the exact bound file without `acknowledgeAbuse`:
+
+- Drive refuses with `cannotDownloadAbusiveFile` → `INFECTED`;
+- Drive serves bytes matching the sealed size and SHA-256 → `CLEAN`;
+- anything else (changed bytes, outage, lost access) → `ERROR` under the
+  existing bounded retry. It never becomes `CLEAN`.
+
+The scan request/attempt/fencing protocol, mandatory `CLEAN` before Save/Submit
+and fail-closed behavior are unchanged; only the verdict source changed. No scan
+runner exists for unbound Supabase objects: while DRIVE is disabled, uploads stay
+`PENDING` and cannot be submitted. Google does not specify the coverage of
+Drive's scan, so hosted acceptance must show that the EICAR test file is refused
+before `DRIVE_RUNTIME_VERIFIED` is set. If it is not refused, the Owner chooses a
+dedicated scanner or a narrower format list; scanning is never silently dropped.
+
+One Cloudflare cron trigger runs every minute. It performs Drive scan and
+cleanup claims (only when `DRIVE_SCHEDULES_VERIFIED` is `true`) and, independent
+of that gate, calls the web application's `/api/cron/*` routes with the shared
+`CRON_SECRET`. Those routes hold the jobs whose credentials live in the web
+runtime (legacy Supabase Storage cleanup, email delivery) and reject any caller
+without the secret.
+
 ## Runtime gates and acceptance
 
 Connected plugin credentials are not application runtime credentials. OAuth
 client/refresh credentials, private folder, gateway keys, narrow worker tokens,
-real scanner and schedules must be configured separately. Until then runtime
+the cron secret and schedules must be configured separately. Until then runtime
 fails closed and no real scan, Drive upload or hosted end-to-end PASS is claimed.
 
 - AC-DRIVE-01: actual browser/service roles cannot bind, lease, seal or read raw locations.

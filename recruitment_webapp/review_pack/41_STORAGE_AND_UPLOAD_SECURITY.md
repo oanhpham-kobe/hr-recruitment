@@ -16,6 +16,8 @@ CR-DRIVE-FILES-HOSTED-20261105: `102_PRIVATE_DRIVE_DOCUMENT_STORAGE.md` extends
 bucket/path into immutable logical identities backed by a private provider
 binding. Existing Supabase storage remains the default until Drive is configured.
 This does not change upload limits, mandatory CLEAN, locks, retention or audit.
+CR-DRIVE-NATIVE-SCAN-20261110: the malware verdict for Drive-bound objects comes
+from Google Drive's own scan, as defined in doc 102; no separate scanner runs.
 
 Private buckets only. No public CV/degree/report/demo URL. Browser gets short-lived authorized signed URL; initial target TTL 1–5 minutes for sensitive documents.
 

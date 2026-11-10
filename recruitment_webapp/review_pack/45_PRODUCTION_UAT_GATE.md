@@ -109,4 +109,6 @@ Run staging evidence at 375, 768, 1280, 1440px per `75_RELEASE_EVIDENCE_MATRIX.m
 ## Scanner fail-closed evidence
 Production malware scanning is mandatory, not feature-optional. UAT must evidence: `PENDING` cannot finalize; `INFECTED` rejects; `ERROR`/scanner unavailable fails closed with controlled retry/recovery; only `CLEAN` is eligible for finalize. There is no production bypass for accepted Candidate/Interview files.
 
+CR-DRIVE-NATIVE-SCAN-20261110: the scanner is Google Drive's own malware scan (doc 102). Evidence must include an EICAR test file uploaded through the real gateway being reported `INFECTED`.
+
 Privacy Notice publication/current-switch rehearsal follows `78_PRIVACY_NOTICE_PUBLICATION_RUNBOOK.md`; production evidence must show no unintended no-current/effective gap.

@@ -71,6 +71,12 @@ export function isAllowedMimeForExtension(
   return allowed.includes(mimeType.toLowerCase());
 }
 
+/** The single MIME type inspection must detect for this filename's extension. */
+export function expectedMimeForFilename(filename: string): string | null {
+  const ext = extractExtension(filename);
+  return ext && isApprovedExtension(ext) ? EXTENSION_MIME_MAP[ext][0] : null;
+}
+
 /**
  * Ensures the candidate-quarantine bucket exists in private storage.
  * Per 49_TECHNICAL_REVIEW_VERCEL_SUPABASE.md:116, this uses the Storage API,

@@ -40,7 +40,7 @@ Candidate.
 
 | Feature | Missing |
 |---|---|
-| Private Google Drive document storage | Database layer and SQL tests done. Gateway worker (`workers/drive-gateway`) and web transport are work in progress and not independently reviewed. No Google Cloud project, OAuth credentials or real scanner yet. Supabase Storage remains the default |
+| Private Google Drive document storage | Owner decision 2026-11-10: Drive is the only store for new files and Drive's own malware scan is the verdict source (doc 102, CR-DRIVE-NATIVE-SCAN-20261110). Database layer, gateway worker (wrangler build, every-minute cron), browser upload/preview/download transport and the `/api/cron/storage-cleanup` route are in code with unit tests. Missing: hosted deployment, OAuth credentials, AC-DRIVE-05 evidence, EICAR test, worker CPU measurement on the Cloudflare free plan. Interview documents have no Drive binding yet |
 | Search / performance / ops / release hardening | Indexed inbox search done; the remaining release-hardening work is not yet specified |
 
 ## D. Before production

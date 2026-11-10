@@ -27,6 +27,7 @@ import type {
   SubmissionDetail,
   SubmissionDocumentItem,
 } from "@/lib/application-inbox/submission-detail-model";
+import { driveDownload, driveErrorMessage } from "@/lib/storage/drive-client";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -517,6 +518,13 @@ export function SubmissionDetailDrawer({
     return () => window.removeEventListener("keydown", handleDiscardKeyDown);
   }, [showDiscardConfirm, handleCancelDiscard]);
 
+  // Drive previews are local Blob URLs; release the bytes when the preview ends.
+  useEffect(() => {
+    const url = previewDoc?.previewUrl;
+    if (!url?.startsWith("blob:")) return;
+    return () => URL.revokeObjectURL(url);
+  }, [previewDoc]);
+
   // Preview modal focus trap & Escape dismissal + focus restore
   useEffect(() => {
     if (!previewDoc) return;
@@ -730,22 +738,37 @@ export function SubmissionDetailDrawer({
       });
 
       if (res.success) {
+        // Drive-backed documents come as a short-lived gateway transport: the
+        // browser fetches the bytes itself and shows them from a local Blob URL.
+        let url = res.previewUrl ?? res.signedUrl;
+        if (res.transport) {
+          try {
+            url = URL.createObjectURL(await driveDownload(res.transport));
+          } catch (error) {
+            setDocError(
+              error instanceof Error ? error.message : driveErrorMessage(""),
+            );
+            return;
+          }
+        }
         if (mode === "preview") {
           previewTriggerRef.current =
             document.activeElement as HTMLElement | null;
           setPreviewDoc({
-            previewUrl: res.previewUrl ?? res.signedUrl,
+            previewUrl: url,
             filename: res.originalFilename,
             mimeType: res.mimeType,
           });
         } else {
           // Trigger download in browser
           const link = document.createElement("a");
-          link.href = res.signedUrl;
+          link.href = url;
           link.download = res.originalFilename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+          // Revoking in the same tick can cancel the download in some browsers.
+          if (res.transport) setTimeout(() => URL.revokeObjectURL(url), 30_000);
         }
       } else {
         setDocError(res.error);
