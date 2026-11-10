@@ -15,6 +15,7 @@ import {
   extractExtension,
   isApprovedExtension,
 } from "@/lib/storage/buckets";
+import { driveUpload } from "@/lib/storage/drive-client";
 import { createBrowserClient } from "@/lib/supabase/client";
 export type StagedDocumentItem = {
   changeId?: string;
@@ -200,20 +201,25 @@ export function DocumentUploader({
 
       const reservation = reserveRes.data;
 
-      // 2. Upload the bytes through the one-use signed token. There is no
-      // successful completion path when the browser upload is skipped.
-      if (!reservation.tempPath || !reservation.token) {
-        throw new Error("Signed upload token is unavailable");
-      }
-      const { error: storageError } = await createBrowserClient()
-        .storage.from(reservation.tempBucket || CANDIDATE_QUARANTINE_BUCKET)
-        .uploadToSignedUrl(reservation.tempPath, reservation.token, file, {
-          contentType: file.type || undefined,
-          upsert: false,
-        });
+      // 2. Upload the bytes: straight to the private Drive gateway when the
+      // server issued a transport, otherwise through the one-use signed
+      // token. There is no successful completion path when this is skipped.
+      if ("transport" in reservation && reservation.transport) {
+        await driveUpload(reservation.transport, file);
+      } else {
+        if (!reservation.tempPath || !reservation.token) {
+          throw new Error("Signed upload token is unavailable");
+        }
+        const { error: storageError } = await createBrowserClient()
+          .storage.from(reservation.tempBucket || CANDIDATE_QUARANTINE_BUCKET)
+          .uploadToSignedUrl(reservation.tempPath, reservation.token, file, {
+            contentType: file.type || undefined,
+            upsert: false,
+          });
 
-      if (storageError) {
-        throw new Error(`Upload failed: ${storageError.message}`);
+        if (storageError) {
+          throw new Error(`Upload failed: ${storageError.message}`);
+        }
       }
 
       // 3. The request path never scans or stages. PENDING_SCAN deliberately
